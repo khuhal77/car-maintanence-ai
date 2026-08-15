@@ -1,0 +1,25 @@
+﻿{
+  "retailers": [
+    {
+      "name": "Amazon",
+      "logo": "🛒",
+      "markup": 1.1,
+      "delivery": "2-3 days",
+      "link_template": "https://amazon.in/s?k=car+{part}"
+    },
+    {
+      "name": "Flipkart",
+      "logo": "🛍️",
+      "markup": 1.05,
+      "delivery": "2 days",
+      "link_template": "https://flipkart.com/search?q=car+{part}"
+    },
+    {
+      "name": "Local Auto Parts",
+      "logo": "🏪",
+      "markup": 1.15,
+      "delivery": "Same day",
+      "link_template": "https://example.com/search?q={part}"
+    }
+  ]
+}

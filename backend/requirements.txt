@@ -1,0 +1,19 @@
+﻿# Web Framework
+fastapi
+uvicorn
+python-multipart
+
+# Image Processing
+pillow
+opencv-python
+
+# ML/AI Models
+ultralytics
+tensorflow
+tensorflow-hub
+numpy
+
+# Utilities
+python-dotenv
+requests
+aiofiles
