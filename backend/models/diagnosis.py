@@ -176,11 +176,8 @@ def load_trained_model():
         model = hub.load(
             "https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/feature_vector/5"
         )
-        logger.info("Loaded TensorFlow Hub model successfully")
+        logger.info("Loaded TensorFlow Hub model")
         return model
-    except ImportError as e:
-        logger.warning(f"tensorflow_hub not installed: {e}. Install with: pip install tensorflow-hub")
-        return None
     except Exception as e:
         logger.warning(f"Could not load TF Hub model: {e}")
         return None

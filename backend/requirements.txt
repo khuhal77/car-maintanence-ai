@@ -1,19 +1,11 @@
-﻿# Web Framework
-fastapi
-uvicorn
-python-multipart
-
-# Image Processing
-pillow
-opencv-python
-
-# ML/AI Models
-ultralytics
-tensorflow
-tensorflow-hub
-numpy
-
-# Utilities
-python-dotenv
-requests
-aiofiles
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+pillow==10.1.0
+opencv-python==4.8.1.78
+ultralytics==8.0.208
+tensorflow==2.14.0
+numpy==1.24.3
+python-dotenv==1.0.0
+requests==2.31.0
+aiofiles==23.2.1

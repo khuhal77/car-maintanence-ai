@@ -1,4 +1,4 @@
-﻿{
+{
   "retailers": [
     {
       "name": "Amazon",
@@ -15,11 +15,18 @@
       "link_template": "https://flipkart.com/search?q=car+{part}"
     },
     {
-      "name": "Local Auto Parts",
+      "name": "Local Auto Parts Store",
       "logo": "🏪",
       "markup": 1.15,
-      "delivery": "Same day",
+      "delivery": "Same day / Next day",
       "link_template": "https://example.com/search?q={part}"
+    },
+    {
+      "name": "AutoZone",
+      "logo": "🚗",
+      "markup": 1.08,
+      "delivery": "3-4 days",
+      "link_template": "https://autozone.com/search?q=car+{part}"
     }
   ]
 }

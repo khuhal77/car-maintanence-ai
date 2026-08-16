@@ -1,30 +1,58 @@
-﻿{
+{
   "battery": {
     "type": "battery",
-    "issue": "🔋 Car battery degraded or failing",
+    "issue": "Car battery degraded or failing",
     "severity": "medium",
     "parts": ["12V Car Battery 60Ah", "Battery Terminals", "Battery Cable"],
-    "avg_price": 3500
+    "avg_price": 3500,
+    "symptoms": ["Dim headlights", "Slow engine cranking", "Clicking sound when starting"]
   },
   "brake_pad": {
     "type": "brake_pad",
-    "issue": "🛑 Brake pads worn out - SAFETY RISK",
+    "issue": "Brake pads worn out - SAFETY RISK",
     "severity": "high",
     "parts": ["Brake Pads Front Set", "Brake Fluid DOT 3", "Brake Rotor"],
-    "avg_price": 1200
+    "avg_price": 1200,
+    "symptoms": ["Squeaking sound when braking", "Reduced brake responsiveness", "Longer stopping distance"]
   },
   "spark_plug": {
     "type": "spark_plug",
-    "issue": "✨ Spark plugs degraded",
+    "issue": "Spark plugs degraded",
     "severity": "medium",
     "parts": ["Spark Plugs Set (4)", "Ignition Coil", "Spark Plug Wire"],
-    "avg_price": 800
+    "avg_price": 800,
+    "symptoms": ["Engine misfiring", "Difficulty starting", "Rough idling"]
   },
   "air_filter": {
     "type": "air_filter",
-    "issue": "💨 Air filter clogged",
+    "issue": "Air filter clogged",
     "severity": "low",
     "parts": ["Air Filter", "Cabin Filter", "Filter Gasket"],
-    "avg_price": 400
+    "avg_price": 400,
+    "symptoms": ["Reduced fuel efficiency", "Reduced engine performance", "Dusty cabin air"]
+  },
+  "oil_filter": {
+    "type": "oil_filter",
+    "issue": "Oil filter needs replacement",
+    "severity": "low",
+    "parts": ["Oil Filter", "Drain Plug", "Engine Oil 5W-30"],
+    "avg_price": 300,
+    "symptoms": ["Oil pressure warning light", "Dark engine oil", "Engine noise"]
+  },
+  "tire": {
+    "type": "tire",
+    "issue": "Tire wear detected",
+    "severity": "medium",
+    "parts": ["Tire (Size dependent)", "Tire Repair Kit", "Wheel Balance"],
+    "avg_price": 2000,
+    "symptoms": ["Uneven tread wear", "Bulges in tire", "Vibration at highway speeds"]
+  },
+  "wiper_blade": {
+    "type": "wiper_blade",
+    "issue": "Wiper blade worn out",
+    "severity": "low",
+    "parts": ["Front Wiper Blade", "Rear Wiper Blade", "Wiper Fluid"],
+    "avg_price": 200,
+    "symptoms": ["Streaky windshield", "Wiper chatter", "Blade skipping"]
   }
 }
