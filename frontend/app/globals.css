@@ -5,23 +5,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg-base: #0b0f14;
-  --bg-panel: #141a21;
-  --bg-panel-raised: #1a212a;
-  --border-hairline: #232b34;
-  --text-primary: #e8ecef;
-  --text-secondary: #7c8894;
-  --text-tertiary: #4b5560;
-  --accent-signal: #ff6b35;
-  --accent-signal-dim: #ff6b3522;
-  --accent-diagnostic: #2dd4a7;
-  --accent-diagnostic-dim: #2dd4a722;
-  --status-high: #ff4757;
-  --status-high-dim: #ff475722;
+  /* Base surfaces — deep instrument-panel black, not pure black so panels can separate */
+  --bg-base: #0a0c10;
+  --bg-panel: #12161d;
+  --bg-panel-raised: #191f28;
+  --border-hairline: #232a34;
+  --border-hairline-strong: #323b48;
+
+  --text-primary: #edf1f4;
+  --text-secondary: #8a93a3;
+  --text-tertiary: #525b68;
+
+  /* Dashboard warning amber — the primary signal color, like a check-engine light */
+  --accent-signal: #ffa63d;
+  --accent-signal-dim: #ffa63d1f;
+
+  /* Diagnostic teal — "reading is nominal" */
+  --accent-diagnostic: #22e0ab;
+  --accent-diagnostic-dim: #22e0ab1f;
+
+  /* Scan cyan — used only for active/interactive scan states (new) */
+  --accent-cyan: #3ee3ff;
+  --accent-cyan-dim: #3ee3ff1a;
+
+  --status-high: #ff4d5e;
+  --status-high-dim: #ff4d5e1f;
   --status-medium: #ffb020;
-  --status-medium-dim: #ffb02022;
-  --status-low: #2dd4a7;
-  --status-low-dim: #2dd4a722;
+  --status-medium-dim: #ffb0201f;
+  --status-low: #22e0ab;
+  --status-low-dim: #22e0ab1f;
+
+  --accent-rgb: 255, 166, 61;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -42,15 +60,12 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Scanline texture used behind the hero / upload frame */
+/* Faint schematic grid used behind the console / diagnostic map */
 .scan-texture {
-  background-image: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.015) 0px,
-    rgba(255, 255, 255, 0.015) 1px,
-    transparent 1px,
-    transparent 3px
-  );
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 /* Corner-bracket viewfinder frame */
@@ -65,33 +80,33 @@ body {
   position: absolute;
   width: 22px;
   height: 22px;
-  border-color: var(--accent-signal);
-  opacity: 0.7;
+  border-color: var(--accent-cyan);
+  opacity: 0.6;
   transition: opacity 0.2s ease;
 }
 .viewfinder::before {
   top: -1px;
   left: -1px;
-  border-top: 2px solid var(--accent-signal);
-  border-left: 2px solid var(--accent-signal);
+  border-top: 2px solid var(--accent-cyan);
+  border-left: 2px solid var(--accent-cyan);
 }
 .viewfinder::after {
   bottom: -1px;
   right: -1px;
-  border-bottom: 2px solid var(--accent-signal);
-  border-right: 2px solid var(--accent-signal);
+  border-bottom: 2px solid var(--accent-cyan);
+  border-right: 2px solid var(--accent-cyan);
 }
 .viewfinder .vf-tr {
   top: -1px;
   right: -1px;
-  border-top: 2px solid var(--accent-signal);
-  border-right: 2px solid var(--accent-signal);
+  border-top: 2px solid var(--accent-cyan);
+  border-right: 2px solid var(--accent-cyan);
 }
 .viewfinder .vf-bl {
   bottom: -1px;
   left: -1px;
-  border-bottom: 2px solid var(--accent-signal);
-  border-left: 2px solid var(--accent-signal);
+  border-bottom: 2px solid var(--accent-cyan);
+  border-left: 2px solid var(--accent-cyan);
 }
 .viewfinder:hover::before,
 .viewfinder:hover::after,
@@ -108,8 +123,63 @@ body {
   animation: pulse-dot 1.6s ease-in-out infinite;
 }
 
+/* Sweeping scan-line shown over the upload frame while a diagnosis is running */
+@keyframes scan-sweep {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(2200%); opacity: 0; }
+}
+.scan-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  box-shadow: 0 0 12px 1px var(--accent-cyan);
+  animation: scan-sweep 1.8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Gentle rise-in used for scroll-revealed sections */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-riseIn {
+  animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Dashed connector line that "fills in" left to right on the process rail */
+@keyframes drawLine {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.rail-line {
+  transform-origin: left center;
+  animation: drawLine 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-dot,
+  .scan-sweep,
+  .animate-fadeIn,
+  .animate-riseIn,
+  .rail-line,
   * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
@@ -122,7 +192,18 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent-signal);
+  outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 
+/* thin scrollbar for the horizontal part rail */
+.rail-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-hairline-strong);
+  border-radius: 3px;
+}
+.rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

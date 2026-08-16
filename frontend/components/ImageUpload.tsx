@@ -10,20 +10,25 @@ interface ImageUploadProps {
 export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
+  const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [error, setError] = useState('');
 
   const processFile = (file: File) => {
+    setError('');
+
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      setError('Please choose an image file.');
       return;
     }
+
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      setError('Image must be smaller than 5MB.');
       return;
     }
 
     setFileName(file.name);
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
@@ -45,6 +50,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading
     if (file) processFile(file);
   };
 
+  const clearSelection = () => {
+    if (loading) return;
+    setPreview(null);
+    setFileName('');
+    setError('');
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
   return (
     <div className="w-full">
       <input
@@ -57,79 +70,141 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading
 
       {!preview ? (
         <div
-          onClick={() => inputRef.current?.click()}
+          onClick={() => !loading && inputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault();
-            setDragActive(true);
+            if (!loading) setDragActive(true);
           }}
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
-          className="rounded p-10 text-center cursor-pointer transition-all duration-150"
+          role="button"
+          tabIndex={loading ? -1 : 0}
+          onKeyDown={(e) => {
+            if (!loading && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          className={`group rounded-3xl border-2 border-dashed p-6 text-center transition duration-200 sm:p-10 ${
+            loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+          }`}
           style={{
-            border: `1px dashed ${dragActive ? 'var(--accent-signal)' : 'var(--border-hairline)'}`,
-            background: dragActive ? 'var(--accent-signal-dim)' : 'transparent',
+            borderColor: dragActive
+              ? 'var(--accent-signal)'
+              : 'color-mix(in srgb, var(--text-primary) 12%, transparent)',
+            background: dragActive
+              ? 'color-mix(in srgb, var(--accent-signal) 6%, transparent)'
+              : 'color-mix(in srgb, var(--text-primary) 2.5%, transparent)',
           }}
         >
-          <div
-            className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--bg-panel-raised)', border: '1px solid var(--border-hairline)' }}
+          {/* <div
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl transition group-hover:-translate-y-0.5"
+            style={{
+              background: 'color-mix(in srgb, var(--accent-signal) 9%, transparent)',
+              color: 'var(--accent-signal)',
+              border: '1px solid color-mix(in srgb, var(--accent-signal) 15%, transparent)',
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5">
-              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h.01M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16.5 8.2 12a2 2 0 0 1 2.9 0l1.4 1.5 1.6-1.8a2 2 0 0 1 3 0l2.9 3.1M7 8h.01M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
             </svg>
+          </div> */}
+
+          <h3 className="mt-5 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Upload a photo of the vehicle part
+          </h3>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6" style={{ color: 'var(--text-tertiary)' }}>
+            Drag and drop an image here, or browse from your device. JPG, PNG and other common image formats are supported.
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[11px] font-medium" style={{ color: 'var(--text-tertiary)' }}>
+            <span className="rounded-full border px-3 py-1.5" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
+              Max 5MB
+            </span>
+            <span className="rounded-full border px-3 py-1.5" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
+              Fast analysis
+            </span>
           </div>
 
-          <p className="font-display font-medium text-[15px] mb-1" style={{ color: 'var(--text-primary)' }}>
-            Drop a part photo here
-          </p>
-          <p className="text-[13px] mb-5" style={{ color: 'var(--text-tertiary)' }}>
-            or select a file — max 5MB
-          </p>
-
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              inputRef.current?.click();
+              if (!loading) inputRef.current?.click();
             }}
             disabled={loading}
-            className="font-mono text-[12px] uppercase tracking-wider px-5 py-2.5 rounded transition-all"
-            style={{
-              background: loading ? 'var(--bg-panel-raised)' : 'var(--accent-signal)',
-              color: loading ? 'var(--text-tertiary)' : '#0b0f14',
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ background: 'var(--accent-signal)' }}
           >
-            {loading ? 'Analyzing…' : 'Browse files'}
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0L8 8m4-4 4 4M5 20h14" />
+            </svg>
+            {loading ? 'Analyzing image…' : 'Choose image'}
           </button>
+
+          {error && (
+            <p className="mt-4 text-sm font-medium" style={{ color: 'var(--status-high)' }} role="alert">
+              {error}
+            </p>
+          )}
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="relative w-full rounded overflow-hidden" style={{ border: '1px solid var(--border-hairline)' }}>
+        <div className="overflow-hidden rounded-3xl border" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 9%, transparent)' }}>
+          <div className="relative overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Preview" className="w-full h-56 object-cover" style={{ filter: loading ? 'brightness(0.5)' : 'none' }} />
+            <img
+              src={preview}
+              alt={`Preview of ${fileName}`}
+              className="h-64 w-full object-cover sm:h-80"
+              style={{ filter: loading ? 'brightness(0.68) blur(1px)' : undefined }}
+            />
+
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider" style={{ color: 'var(--accent-signal)' }}>
-                  <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
-                  Analyzing
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+                <div className="rounded-2xl border bg-white/90 px-5 py-4 text-center shadow-xl dark:bg-slate-900/90">
+                  <div className="mb-2 flex justify-center gap-1.5">
+                    {[0, 150, 300].map((delay) => (
+                      <span
+                        key={delay}
+                        className="h-2 w-2 animate-bounce rounded-full"
+                        style={{ background: 'var(--accent-signal)', animationDelay: `${delay}ms` }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    Analyzing image…
+                  </p>
+                  <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    Identifying the part and possible issue
+                  </p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between px-1">
-            <p className="font-mono text-[11px] truncate max-w-[70%]" style={{ color: 'var(--text-tertiary)' }}>
-              {fileName}
-            </p>
+          <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                {fileName}
+              </p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {loading ? 'Analysis in progress' : 'Image ready for analysis'}
+              </p>
+            </div>
+
             {!loading && (
               <button
-                onClick={() => {
-                  setPreview(null);
-                  setFileName('');
+                type="button"
+                onClick={clearSelection}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:bg-black/5"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--text-primary) 9%, transparent)',
+                  color: 'var(--text-primary)',
                 }}
-                className="font-mono text-[11px] uppercase tracking-wider hover:underline"
-                style={{ color: 'var(--accent-signal)' }}
               >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m6 6 12 12M18 6 6 18" />
+                </svg>
                 Replace
               </button>
             )}
