@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Diagnosis Card Component
- * Displays diagnosis results
- */
-
 import React from 'react';
 
 interface Diagnosis {
@@ -16,6 +11,7 @@ interface Diagnosis {
   emoji?: string;
   confidence?: number;
   detected_object?: string;
+  method?: string;
 }
 
 interface DiagnosisCardProps {
@@ -23,85 +19,78 @@ interface DiagnosisCardProps {
 }
 
 const severityConfig = {
-  low: {
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    border: 'border-green-300',
-    label: '⚠️ Low Priority',
-  },
-  medium: {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-300',
-    label: '⚠️ Medium Priority',
-  },
-  high: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-300',
-    label: '🚨 High Priority - Immediate Action Needed',
-  },
+  low: { color: 'var(--status-low)', dim: 'var(--status-low-dim)', label: 'LOW SEVERITY' },
+  medium: { color: 'var(--status-medium)', dim: 'var(--status-medium-dim)', label: 'MEDIUM SEVERITY' },
+  high: { color: 'var(--status-high)', dim: 'var(--status-high-dim)', label: 'HIGH SEVERITY — ACT SOON' },
 };
 
 export const DiagnosisCard: React.FC<DiagnosisCardProps> = ({ diagnosis }) => {
-  const severity = (diagnosis.severity in severityConfig ? diagnosis.severity : 'low') as keyof typeof severityConfig;
-  const config = severityConfig[severity];
+  const key = (diagnosis.severity in severityConfig ? diagnosis.severity : 'low') as keyof typeof severityConfig;
+  const config = severityConfig[key];
+  const confidencePct = diagnosis.confidence !== undefined ? Math.round(diagnosis.confidence * 100) : null;
 
   return (
-    <div className={`rounded-lg border-2 ${config.border} ${config.bg} p-6 mb-6`}>
-      <div className="mb-4">
-        <div className="flex items-start justify-between mb-2">
-          <h2 className="text-2xl font-bold">
-            {diagnosis.emoji || '🔍'} {diagnosis.issue}
-          </h2>
-        </div>
-
-        <div className={`inline-block px-4 py-1 rounded-full ${config.text} font-semibold text-sm`}>
+    <div className="rounded overflow-hidden mb-6" style={{ border: '1px solid var(--border-hairline)', background: 'var(--bg-panel)' }}>
+      {/* Status strip */}
+      <div className="flex items-center justify-between px-5 py-3" style={{ background: config.dim, borderBottom: `1px solid ${config.color}` }}>
+        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider" style={{ color: config.color }}>
+          <span className="w-2 h-2 rounded-full" style={{ background: config.color }} />
           {config.label}
         </div>
+        {diagnosis.detected_object && (
+          <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+            source: {diagnosis.detected_object}
+          </span>
+        )}
       </div>
 
-      <div className="bg-white bg-opacity-60 rounded p-4 mb-4">
-        <p className="text-gray-800 leading-relaxed">{diagnosis.recommendation}</p>
-      </div>
+      <div className="p-6">
+        <h2 className="font-display font-semibold text-[22px] leading-tight mb-4" style={{ color: 'var(--text-primary)' }}>
+          {diagnosis.issue}
+        </h2>
 
-      {diagnosis.parts && diagnosis.parts.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-gray-800 mb-2">📦 Parts to Replace:</h3>
-          <ul className="list-disc list-inside space-y-1">
-            {diagnosis.parts.map((part, idx) => (
-              <li key={idx} className="text-gray-700">
-                {part}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        <p className="text-[14px] leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+          {diagnosis.recommendation}
+        </p>
 
-      {diagnosis.confidence !== undefined && (
-        <div className="mt-4 pt-4 border-t border-opacity-20 border-current">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Detection Confidence:</span>
-            <div className="flex items-center space-x-2">
-              <div className="w-24 h-2 bg-gray-300 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${
-                    diagnosis.confidence > 0.7
-                      ? 'bg-green-500'
-                      : diagnosis.confidence > 0.5
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${diagnosis.confidence * 100}%` }}
-                />
-              </div>
-              <span className="text-sm font-semibold">
-                {(diagnosis.confidence * 100).toFixed(0)}%
-              </span>
+        {diagnosis.parts && diagnosis.parts.length > 0 && (
+          <div className="mb-6">
+            <div className="font-mono text-[10px] uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)' }}>
+              Parts to replace
+            </div>
+            <div className="space-y-1.5">
+              {diagnosis.parts.map((part, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-[14px]" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--accent-signal)' }} />
+                  {part}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {confidencePct !== null && (
+          <div className="pt-5" style={{ borderTop: '1px solid var(--border-hairline)' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+                Detection confidence
+              </span>
+              <span className="font-mono text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                {confidencePct}%
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-panel-raised)' }}>
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${confidencePct}%`,
+                  background: confidencePct > 70 ? 'var(--accent-diagnostic)' : confidencePct > 45 ? 'var(--status-medium)' : 'var(--status-high)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

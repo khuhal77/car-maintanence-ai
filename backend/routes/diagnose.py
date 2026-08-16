@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import base64
 import logging
 from models.car_parts import detect_car_part, get_part_price_range
-from models.diagnosis import classify_car_part_cnn
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/diagnose", tags=["diagnosis"])
@@ -48,7 +48,7 @@ async def diagnose(request: DiagnoseRequest):
         if ',' in image_base64:
             image_base64 = image_base64.split(',')[1]
 
-        diagnosis = classify_car_part_cnn(image_base64)
+        diagnosis = detect_car_part(image_base64)
         part_type = diagnosis.get('type', 'unknown')
         avg_price = get_part_price_range(part_type)
         parts = diagnosis.get('parts', [])

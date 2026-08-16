@@ -1,6 +1,6 @@
 """
 Car Parts Detection using YOLOv8
-Detects car parts and diagnoses issues
+Detects car parts using fine-tuned or pretrained models
 """
 
 import numpy as np
@@ -8,29 +8,66 @@ from PIL import Image
 import io
 import base64
 import logging
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load YOLOv8 Nano model (lightweight, free)
-try:
-    from ultralytics import YOLO
-    model = YOLO('yolov8n.pt')
-    logger.info("YOLOv8 model loaded successfully")
-except Exception as e:
-    logger.warning(f"Could not load YOLOv8 model: {e}")
-    model = None
+# Global model instance
+_yolo_model = None
+_model_type = None  # 'fine_tuned' or 'pretrained'
+
+# Load YOLOv8 model (fine-tuned if available, else default)
+def _load_yolo_model():
+    """Load fine-tuned or default YOLOv8 model."""
+    global _yolo_model, _model_type
+    
+    try:
+        from ultralytics import YOLO
+        
+        # Try to load fine-tuned model first
+        fine_tuned_path = 'models/yolo_car_parts/exp/weights/best.pt'
+        if Path(fine_tuned_path).exists():
+            logger.info("Loading fine-tuned YOLOv8 model for car parts...")
+            _yolo_model = YOLO(fine_tuned_path)
+            _model_type = 'fine_tuned'
+            logger.info("✓ Fine-tuned YOLOv8 model loaded")
+        else:
+            # Fall back to default model
+            logger.info("Loading default YOLOv8 Nano model...")
+            _yolo_model = YOLO('yolov8n.pt')
+            _model_type = 'pretrained'
+            logger.info("✓ Default YOLOv8 model loaded")
+        
+        return _yolo_model
+    except Exception as e:
+        logger.warning(f"Could not load YOLOv8 model: {e}")
+        _yolo_model = None
+        return None
+
+model = _load_yolo_model()
 
 # Mapping from detected COCO objects to car part categories
 # (YOLOv8 default weights are trained on COCO, not car parts specifically,
 # so this mapping is a placeholder until you fine-tune on a car-parts dataset)
+# Broadened to cover every vehicle-adjacent COCO class so more real-world
+# photos land on a specific category instead of falling through to "unknown".
 CAR_PARTS_MAPPING = {
     'car': 'vehicle_body',
     'truck': 'vehicle_body',
+    'bus': 'vehicle_body',
+    'train': 'vehicle_body',
     'motorcycle': 'motorcycle_part',
     'bicycle': 'wheel_part',
     'bottle': 'fluid_container',
-    'person': 'unknown',
+}
+
+# COCO classes that are vehicle-related but don't map to a specific part.
+# These still count as "a vehicle was detected", so we route them to the
+# heuristic classifier for a second-pass guess instead of "unknown".
+VEHICLE_ADJACENT_CLASSES = {
+    'car', 'truck', 'bus', 'train', 'motorcycle', 'bicycle',
+    'traffic light', 'stop sign', 'parking meter',
 }
 
 # Diagnosis database for each part category
@@ -103,11 +140,12 @@ def detect_car_part(image_base64: str) -> dict:
         logger.info(f"Image shape: {img_array.shape}")
 
         if model is None:
-            logger.warning("Model not loaded, using fallback diagnosis")
-            return get_fallback_diagnosis()
+            logger.warning("Model not loaded, falling back to heuristic classifier")
+            return classify_with_heuristic_fallback(image_base64)
 
-        # YOLOv8 inference
-        results = model(img_array, conf=0.3, verbose=False)
+        # YOLOv8 inference with a lower threshold so more borderline
+        # detections (partial views, odd angles, close-ups) still register
+        results = model(img_array, conf=0.15, verbose=False)
 
         # Extract detected objects
         detected_objects = []
@@ -124,26 +162,64 @@ def detect_car_part(image_base64: str) -> dict:
 
         logger.info(f"Detected objects: {detected_objects}")
 
-        if not detected_objects:
-            return get_fallback_diagnosis()
+        # Prefer the highest-confidence detection that maps to a known part
+        mappable = [d for d in detected_objects if d['class'].lower() in CAR_PARTS_MAPPING]
+        vehicle_adjacent = [d for d in detected_objects if d['class'].lower() in VEHICLE_ADJACENT_CLASSES]
 
-        # Use highest confidence detection
-        top_detection = max(detected_objects, key=lambda d: d['confidence'])
-        detected_class = top_detection['class'].lower()
-        confidence = top_detection['confidence']
+        if mappable:
+            top_detection = max(mappable, key=lambda d: d['confidence'])
+            detected_class = top_detection['class'].lower()
+            confidence = top_detection['confidence']
 
-        part_category = CAR_PARTS_MAPPING.get(detected_class, 'unknown')
-        diagnosis = PART_DIAGNOSIS.get(part_category, PART_DIAGNOSIS['unknown']).copy()
+            part_category = CAR_PARTS_MAPPING.get(detected_class, 'unknown')
+            diagnosis = PART_DIAGNOSIS.get(part_category, PART_DIAGNOSIS['unknown']).copy()
 
-        diagnosis['confidence'] = round(confidence, 3)
-        diagnosis['detected_object'] = detected_class
-        diagnosis['detection_valid'] = confidence > 0.5
+            diagnosis['confidence'] = round(confidence, 3)
+            diagnosis['detected_object'] = detected_class
+            diagnosis['detection_valid'] = confidence > 0.5
+            diagnosis['method'] = 'yolo'
 
-        return diagnosis
+            return diagnosis
+
+        if vehicle_adjacent:
+            # A vehicle was in frame but not a class we map directly (e.g. a
+            # distant car, traffic light in a street scene). A whole-vehicle
+            # or street photo isn't a close-up of a specific part, so hand
+            # off to the heuristic pass rather than guessing a part from it.
+            logger.info("Vehicle-adjacent object seen but not part-specific; using heuristic pass")
+            return classify_with_heuristic_fallback(image_base64, note="Vehicle detected in scene; closer photo of the part gives a more specific result.")
+
+        # Nothing vehicle-related detected at all by YOLO — still try the
+        # heuristic classifier before giving up, since it may be a close-up
+        # crop of a part with no recognizable full object in frame.
+        return classify_with_heuristic_fallback(image_base64)
 
     except Exception as e:
         logger.error(f"Error in detect_car_part: {str(e)}")
         return get_error_diagnosis(str(e))
+
+
+def classify_with_heuristic_fallback(image_base64: str, note: str = None) -> dict:
+    """
+    Second-pass classifier used whenever YOLO doesn't find a directly
+    mappable part. Uses the lightweight heuristic model in diagnosis.py
+    so the app still returns a specific, labeled guess (with a lower
+    confidence score) instead of a dead-end "unknown" result.
+    """
+    try:
+        from models.diagnosis import classify_car_part_cnn
+        diagnosis = classify_car_part_cnn(image_base64)
+        diagnosis['method'] = diagnosis.get('method', 'heuristic_fallback')
+        # Heuristic guesses are inherently less certain than a direct YOLO
+        # match — cap confidence so the UI's confidence bar reflects that.
+        if 'confidence' in diagnosis:
+            diagnosis['confidence'] = round(min(diagnosis['confidence'], 0.6), 3)
+        if note:
+            diagnosis['recommendation'] = f"{diagnosis.get('recommendation', '')} {note}".strip()
+        return diagnosis
+    except Exception as e:
+        logger.error(f"Heuristic fallback failed: {e}")
+        return get_fallback_diagnosis()
 
 
 def get_fallback_diagnosis() -> dict:

@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Results Page
- * Shows diagnosis results and price comparison
- */
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DiagnosisCard } from '@/components/DiagnosisCard';
@@ -38,7 +33,6 @@ export default function ResultPage() {
 
   useEffect(() => {
     const diagnoseResult = sessionStorage.getItem('diagnoseResult');
-
     if (!diagnoseResult) {
       router.push('/');
       return;
@@ -65,109 +59,92 @@ export default function ResultPage() {
 
   if (loading || !result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin text-6xl mb-4">⚙️</div>
-          <p className="text-gray-700 font-semibold">Finding best prices...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-base)' }}>
+        <div className="flex items-center gap-3 font-mono text-[13px] uppercase tracking-wider" style={{ color: 'var(--accent-signal)' }}>
+          <span className="w-2 h-2 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
+          Compiling diagnostic report
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
-      <nav className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.push('/')}
-              className="text-2xl hover:scale-110 transition-transform"
-            >
-              ←
-            </button>
-            <h1 className="text-2xl font-bold text-gray-800">Results</h1>
-          </div>
+    <main className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
+      {/* Top bar */}
+      <header className="border-b sticky top-0 z-10 backdrop-blur" style={{ borderColor: 'var(--border-hairline)', background: 'rgba(11,15,20,0.85)' }}>
+        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <button
-            onClick={() => {
-              sessionStorage.removeItem('diagnoseResult');
-              router.push('/');
-            }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            Analyze Another Part
+            ← New scan
           </button>
+          <span className="font-display font-semibold text-[14px] tracking-tight">VEHIQ</span>
         </div>
-      </nav>
+      </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">🎯 Diagnosis Results</h1>
-          <p className="text-gray-600">
-            Detected part:{' '}
-            <span className="font-semibold text-indigo-600">
-              {result.diagnosis.detected_object || result.part_type}
-            </span>
-          </p>
+      <div className="max-w-3xl mx-auto px-6 py-10">
+        {/* Report header */}
+        <div className="flex items-baseline justify-between mb-8">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)' }}>
+              Diagnostic report
+            </div>
+            <h1 className="font-display font-semibold text-[28px] tracking-tight">
+              {result.part_type.replace('_', ' ')}
+            </h1>
+          </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 rounded-lg text-red-700">
-            <p>{error}</p>
+          <div className="mb-6 p-4 rounded font-mono text-[12px]" style={{ background: 'var(--status-high-dim)', border: '1px solid var(--status-high)', color: 'var(--status-high)' }}>
+            ERROR — {error}
           </div>
         )}
 
         <DiagnosisCard diagnosis={result.diagnosis} />
-
         <PriceComparison prices={prices} loading={apiLoading || prices.length === 0} />
 
-        <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-          <h3 className="font-bold text-lg mb-4">💡 Tips & Recommendations</h3>
+        {/* Guidance panel */}
+        <div className="rounded p-6 mb-6" style={{ border: '1px solid var(--border-hairline)', background: 'var(--bg-panel)' }}>
+          <div className="font-mono text-[10px] uppercase tracking-wider mb-4" style={{ color: 'var(--text-tertiary)' }}>
+            Before you buy
+          </div>
           <div className="space-y-3">
-            <div className="flex space-x-3">
-              <div className="text-2xl">🔍</div>
-              <div>
-                <p className="font-semibold text-gray-800">Get Professional Opinion</p>
-                <p className="text-sm text-gray-600">
-                  Always consult a certified mechanic for accurate diagnosis
-                </p>
+            {[
+              ['Confirm with a mechanic', 'This is a photo-based estimate, not a certified inspection.'],
+              ['Weigh delivery time', 'The cheapest listing isn\u2019t always the fastest one.'],
+              ['Check seller ratings', 'Read reviews on the retailer\u2019s page before purchasing.'],
+            ].map(([title, desc]) => (
+              <div key={title} className="flex gap-3 text-[13px]">
+                <span className="w-1 h-1 rounded-full mt-2 flex-shrink-0" style={{ background: 'var(--accent-signal)' }} />
+                <div>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{title}.</span>{' '}
+                  <span style={{ color: 'var(--text-secondary)' }}>{desc}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex space-x-3">
-              <div className="text-2xl">📋</div>
-              <div>
-                <p className="font-semibold text-gray-800">Compare Shipping</p>
-                <p className="text-sm text-gray-600">
-                  Factor in delivery time and cost along with product price
-                </p>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              <div className="text-2xl">⭐</div>
-              <div>
-                <p className="font-semibold text-gray-800">Check Reviews</p>
-                <p className="text-sm text-gray-600">
-                  Read seller reviews before making a purchase decision
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button
             onClick={() => {
               sessionStorage.removeItem('diagnoseResult');
               router.push('/');
             }}
-            className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+            className="flex-1 py-3 rounded font-mono text-[12px] uppercase tracking-wider transition-all"
+            style={{ background: 'var(--accent-signal)', color: '#0b0f14' }}
           >
-            ← Back to Home
+            Run another scan
           </button>
           <button
             onClick={() => window.print()}
-            className="flex-1 px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-all"
+            className="px-6 py-3 rounded font-mono text-[12px] uppercase tracking-wider transition-all"
+            style={{ border: '1px solid var(--border-hairline)', color: 'var(--text-secondary)' }}
           >
-            🖨️ Print Results
+            Print
           </button>
         </div>
       </div>

@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Image Upload Component
- * Handles image upload from user
- */
-
 import React, { useRef, useState } from 'react';
 
 interface ImageUploadProps {
@@ -16,23 +11,19 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('');
+  const [dragActive, setDragActive] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       alert('File size must be less than 5MB');
       return;
     }
 
     setFileName(file.name);
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
@@ -42,8 +33,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading
     reader.readAsDataURL(file);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       <input
         ref={inputRef}
         type="file"
@@ -55,69 +58,82 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading
       {!preview ? (
         <div
           onClick={() => inputRef.current?.click()}
-          className={`
-            border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-            transition-all duration-200
-            ${
-              loading
-                ? 'border-gray-300 bg-gray-50'
-                : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50'
-            }
-          `}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={handleDrop}
+          className="rounded p-10 text-center cursor-pointer transition-all duration-150"
+          style={{
+            border: `1px dashed ${dragActive ? 'var(--accent-signal)' : 'var(--border-hairline)'}`,
+            background: dragActive ? 'var(--accent-signal-dim)' : 'transparent',
+          }}
         >
-          <div className="text-4xl mb-3">📸</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-1">
-            Upload Car Part Photo
-          </h3>
-          <p className="text-sm text-gray-600 mb-3">Drag and drop or click to select</p>
-          <p className="text-xs text-gray-500">JPG, PNG, GIF or WebP (Max 5MB)</p>
+          <div
+            className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--bg-panel-raised)', border: '1px solid var(--border-hairline)' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5">
+              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h.01M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
+          <p className="font-display font-medium text-[15px] mb-1" style={{ color: 'var(--text-primary)' }}>
+            Drop a part photo here
+          </p>
+          <p className="text-[13px] mb-5" style={{ color: 'var(--text-tertiary)' }}>
+            or select a file — max 5MB
+          </p>
 
           <button
-            onClick={() => inputRef.current?.click()}
+            onClick={(e) => {
+              e.stopPropagation();
+              inputRef.current?.click();
+            }}
             disabled={loading}
-            className={`
-              mt-4 px-6 py-2 rounded-lg font-medium transition-all
-              ${
-                loading
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-              }
-            `}
+            className="font-mono text-[12px] uppercase tracking-wider px-5 py-2.5 rounded transition-all"
+            style={{
+              background: loading ? 'var(--bg-panel-raised)' : 'var(--accent-signal)',
+              color: loading ? 'var(--text-tertiary)' : '#0b0f14',
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
           >
-            {loading ? '🔄 Analyzing...' : 'Select Photo'}
+            {loading ? 'Analyzing…' : 'Browse files'}
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden">
+        <div className="space-y-3">
+          <div className="relative w-full rounded overflow-hidden" style={{ border: '1px solid var(--border-hairline)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+            <img src={preview} alt="Preview" className="w-full h-56 object-cover" style={{ filter: loading ? 'brightness(0.5)' : 'none' }} />
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider" style={{ color: 'var(--accent-signal)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
+                  Analyzing
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600 mb-1">
-              <strong>File:</strong> {fileName}
+          <div className="flex items-center justify-between px-1">
+            <p className="font-mono text-[11px] truncate max-w-[70%]" style={{ color: 'var(--text-tertiary)' }}>
+              {fileName}
             </p>
-            <p className="text-xs text-gray-500">
-              Click button below to analyze or{' '}
+            {!loading && (
               <button
                 onClick={() => {
                   setPreview(null);
                   setFileName('');
                 }}
-                className="text-indigo-600 hover:underline ml-1"
+                className="font-mono text-[11px] uppercase tracking-wider hover:underline"
+                style={{ color: 'var(--accent-signal)' }}
               >
-                choose another photo
+                Replace
               </button>
-            </p>
+            )}
           </div>
-
-          {loading && (
-            <div className="flex items-center justify-center space-x-2 text-indigo-600">
-              <div className="animate-spin">⚙️</div>
-              <p className="font-medium">Analyzing car part...</p>
-            </div>
-          )}
         </div>
       )}
     </div>

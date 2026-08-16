@@ -11,6 +11,7 @@ from datetime import datetime
 
 from routes.diagnose import router as diagnose_router
 from routes.prices import router as prices_router
+from models.diagnosis import init_model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -86,6 +87,14 @@ async def startup_event():
     logger.info("=" * 50)
     logger.info("CORS enabled for localhost:3000")
     logger.info("Routes registered: /api/diagnose, /api/prices")
+    logger.info("Initializing ML models...")
+    
+    # Initialize the MobileNetV2 model for car part classification
+    if init_model():
+        logger.info("✓ ML models initialized successfully")
+    else:
+        logger.warning("⚠ ML models failed to initialize - predictions may be unavailable")
+    
     logger.info("=" * 50)
 
 
@@ -100,9 +109,8 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("Starting Car Maintenance AI Backend")
     print("=" * 60)
-    print("Server: http://localhost:5000")
+    print("Server: http://0.0.0.0:5000")
     print("Docs:   http://localhost:5000/docs")
     print("=" * 60 + "\n")
 
-    uvicorn.run("main:app", host="localhost", port=5000, reload=True, log_level="info")
-
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True, log_level="info")

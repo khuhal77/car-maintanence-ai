@@ -3,8 +3,8 @@ import { ApiProvider } from '@/contexts/ApiContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Car Maintenance AI',
-  description: 'AI-powered car maintenance diagnostics and price comparison',
+  title: 'VEHIQ — Vehicle Part Diagnostics',
+  description: 'Photo-based diagnostics for car and bike parts, with live retailer price comparison.',
 };
 
 export default function RootLayout({
