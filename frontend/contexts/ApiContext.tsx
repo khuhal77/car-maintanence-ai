@@ -38,10 +38,21 @@ interface DiagnoseResponse {
   part_type: string;
 }
 
+interface ChatPayload {
+  message: string;
+  diagnosis?: Partial<Diagnosis>;
+}
+
+interface ChatResponse {
+  reply: string;
+  provider: string;
+}
+
 interface ApiContextType {
   diagnose: (imageBase64: string) => Promise<DiagnoseResponse>;
   getPrices: (partType: string, basePrice: number) => Promise<PriceItem[]>;
   getRetailers: () => Promise<any>;
+  chatWithVehicleAssistant: (message: string, diagnosis: Partial<Diagnosis>) => Promise<ChatResponse>;
   loading: boolean;
   error: string | null;
 }
@@ -65,10 +76,10 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
 
       return response.data as DiagnoseResponse;
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Diagnosis failed';
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.detail || err?.response?.data?.error || err?.message || 'Diagnosis failed';
       setError(errorMsg);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -78,16 +89,20 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     setError(null);
     try {
+      if (!partType || partType === 'unknown' || !Number.isFinite(basePrice) || basePrice <= 0) {
+        return [];
+      }
+
       const response = await axios.post(`${API_BASE_URL}/api/prices`, {
         part_type: partType,
         base_price: basePrice,
       });
 
       return response.data as PriceItem[];
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Price fetch failed';
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.detail || err?.response?.data?.error || err?.message || 'Price fetch failed';
       setError(errorMsg);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -104,8 +119,26 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const chatWithVehicleAssistant = async (message: string, diagnosis: Partial<Diagnosis>): Promise<ChatResponse> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/diagnose/chat`, {
+        message,
+        diagnosis,
+      } as ChatPayload);
+      return response.data as ChatResponse;
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.detail || err?.response?.data?.error || err?.message || 'Assistant chat failed';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ApiContext.Provider value={{ diagnose, getPrices, getRetailers, loading, error }}>
+    <ApiContext.Provider value={{ diagnose, getPrices, getRetailers, chatWithVehicleAssistant, loading, error }}>
       {children}
     </ApiContext.Provider>
   );

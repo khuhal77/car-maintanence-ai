@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ImageUpload } from '@/components/ImageUpload';
+import { ChatWidget } from '@/components/ChatWidget';
 import { useApi } from '@/contexts/ApiContext';
 
 const PART_INDEX = [
@@ -192,6 +193,11 @@ export default function Home() {
           <span>Estimates only — confirm with a certified mechanic</span>
         </div>
       </footer>
+
+      {/* Chat Widget - Floating */}
+      <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 40 }}>
+        <ChatWidget isCompact={true} />
+      </div>
     </main>
   );
 }

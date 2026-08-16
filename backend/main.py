@@ -8,6 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from routes.diagnose import router as diagnose_router
 from routes.prices import router as prices_router

@@ -4,10 +4,23 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DiagnosisCard } from '@/components/DiagnosisCard';
 import { PriceComparison } from '@/components/PriceComparison';
+import { VehicleAssistant } from '@/components/VehicleAssistant';
 import { useApi } from '@/contexts/ApiContext';
 
+interface DiagnosisData {
+  type?: string;
+  issue?: string;
+  severity?: 'low' | 'medium' | 'high';
+  recommendation?: string;
+  parts?: string[];
+  confidence?: number;
+  detected_object?: string;
+  emoji?: string;
+  method?: string;
+}
+
 interface DiagnoseResult {
-  diagnosis: any;
+  diagnosis: DiagnosisData;
   parts: string[];
   avg_price: number;
   part_type: string;
@@ -21,6 +34,33 @@ interface PriceItem {
   delivery: string;
   link: string;
 }
+
+const normalizeDiagnosisResult = (raw: any): DiagnoseResult => {
+  const diagnosis = raw?.diagnosis && typeof raw.diagnosis === 'object' ? raw.diagnosis : raw || {};
+  const partType = String(raw?.part_type || diagnosis?.type || 'unknown');
+  const normalizedParts = Array.isArray(raw?.parts)
+    ? raw.parts
+    : Array.isArray(diagnosis?.parts)
+      ? diagnosis.parts
+      : [];
+  const avgPrice = Number(raw?.avg_price ?? diagnosis?.avg_price ?? 0);
+
+  return {
+    diagnosis: {
+      ...diagnosis,
+      type: diagnosis?.type || partType,
+      issue: diagnosis?.issue || 'Could not identify part clearly',
+      severity: diagnosis?.severity || 'low',
+      recommendation: diagnosis?.recommendation || 'Please upload a clear, close-up image of the car part.',
+      parts: normalizedParts,
+      confidence: Number(diagnosis?.confidence ?? 0),
+      detected_object: diagnosis?.detected_object || 'unknown',
+    },
+    parts: normalizedParts,
+    avg_price: Number.isFinite(avgPrice) ? avgPrice : 0,
+    part_type: partType,
+  };
+};
 
 export default function ResultPage() {
   const router = useRouter();
@@ -38,24 +78,38 @@ export default function ResultPage() {
       return;
     }
 
-    const parsedResult: DiagnoseResult = JSON.parse(diagnoseResult);
-    setResult(parsedResult);
+    try {
+      const parsedResult = normalizeDiagnosisResult(JSON.parse(diagnoseResult));
+      setResult(parsedResult);
 
-    const fetchPrices = async () => {
-      try {
-        const fetchedPrices = await getPrices(parsedResult.part_type, parsedResult.avg_price);
-        setPrices(fetchedPrices);
-      } catch (err) {
-        setError('Failed to fetch prices');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const fetchPrices = async () => {
+        try {
+          const shouldFetchPrices = Boolean(parsedResult.part_type) && parsedResult.part_type !== 'unknown' && parsedResult.avg_price > 0;
+          if (!shouldFetchPrices) {
+            setPrices([]);
+            return;
+          }
 
-    fetchPrices();
+          const fetchedPrices = await getPrices(parsedResult.part_type, parsedResult.avg_price);
+          setPrices(fetchedPrices);
+        } catch (err) {
+          setError('Failed to fetch prices');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPrices();
+    } catch (err) {
+      console.error('Failed to parse diagnosis result', err);
+      setError('Invalid diagnostic result. Please scan again.');
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
+
+  const shouldShowPriceComparison = !!result && result.part_type !== 'unknown' && result.avg_price > 0;
 
   if (loading || !result) {
     return (
@@ -92,7 +146,7 @@ export default function ResultPage() {
               Diagnostic report
             </div>
             <h1 className="font-display font-semibold text-[28px] tracking-tight">
-              {result.part_type.replace('_', ' ')}
+              {result.part_type.replace(/_/g, ' ')}
             </h1>
           </div>
         </div>
@@ -104,7 +158,8 @@ export default function ResultPage() {
         )}
 
         <DiagnosisCard diagnosis={result.diagnosis} />
-        <PriceComparison prices={prices} loading={apiLoading || prices.length === 0} />
+        <VehicleAssistant diagnosis={result.diagnosis} />
+        {shouldShowPriceComparison && <PriceComparison prices={prices} loading={apiLoading} />}
 
         {/* Guidance panel */}
         <div className="rounded p-6 mb-6" style={{ border: '1px solid var(--border-hairline)', background: 'var(--bg-panel)' }}>
