@@ -2,6 +2,12 @@
 
 import React from 'react';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+
 interface PriceItem {
   retailer: string;
   logo: string;
@@ -16,230 +22,141 @@ interface PriceComparisonProps {
   loading?: boolean;
 }
 
-function SkeletonRow() {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b px-5 py-4 last:border-b-0" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 6%, transparent)' }}>
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="h-10 w-10 animate-pulse rounded-xl" style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }} />
-        <div className="min-w-0 space-y-2">
-          <div className="h-3 w-28 animate-pulse rounded" style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }} />
-          <div className="h-2.5 w-40 animate-pulse rounded" style={{ background: 'color-mix(in srgb, var(--text-primary) 6%, transparent)' }} />
-        </div>
-      </div>
-      <div className="h-6 w-20 animate-pulse rounded" style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }} />
-    </div>
-  );
-}
-
 export const PriceComparison: React.FC<PriceComparisonProps> = ({ prices, loading = false }) => {
   if (loading) {
     return (
-      <section
-        className="mb-6 overflow-hidden rounded-3xl border shadow-[0_18px_55px_rgba(15,23,42,0.18)]"
-        style={{
-          borderColor: 'rgba(148, 163, 184, 0.18)',
-          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(10, 15, 24, 0.96))',
-          boxShadow: '0 18px 55px rgba(2, 6, 23, 0.38)',
-        }}
-      >
-        <div className="px-5 py-5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl"
-              style={{ background: 'color-mix(in srgb, var(--accent-signal) 10%, transparent)' }}
-            >
-              <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: 'var(--accent-signal)' }} />
+      <Card className="border" style={{ borderColor: 'var(--border-hairline-strong)', background: 'var(--bg-panel)' }}>
+        <CardContent className="flex items-center justify-center gap-3 p-8 text-center">
+          <div className="flex items-center gap-3 font-mono text-[12px] uppercase tracking-wider" style={{ color: 'var(--accent-signal)' }}>
+            <div className="flex gap-1.5">
+              <Skeleton className="h-2 w-2 rounded-full bg-[color:var(--accent-signal)]" />
+              <Skeleton className="h-2 w-2 rounded-full bg-[color:var(--accent-signal)]" />
+              <Skeleton className="h-2 w-2 rounded-full bg-[color:var(--accent-signal)]" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                Finding the best prices
-              </h3>
-              <p className="mt-0.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                Checking available retailers…
-              </p>
-            </div>
+            Scanning retailers…
           </div>
-        </div>
-
-        <div className="border-t" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 7%, transparent)' }}>
-          <SkeletonRow />
-          <SkeletonRow />
-          <SkeletonRow />
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     );
   }
 
   if (!prices || prices.length === 0) {
     return (
-      <section
-        className="mb-6 rounded-3xl border p-8 text-center"
-        style={{
-          borderColor: 'rgba(148, 163, 184, 0.18)',
-          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(10, 15, 24, 0.96))',
-          boxShadow: '0 18px 55px rgba(2, 6, 23, 0.38)',
-        }}
-      >
-        <div
-          className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl"
-          style={{
-            background: 'color-mix(in srgb, var(--accent-signal) 8%, transparent)',
-            color: 'var(--accent-signal)',
-          }}
-        >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 8h12M7 4h10l1 4v11H6V8l1-4Zm2 9h6" />
-          </svg>
-        </div>
-        <p className="mt-4 text-sm font-semibold" style={{ color: '#f8fafc' }}>
-          No pricing data yet
-        </p>
-        <p className="mt-1 text-xs" style={{ color: '#cbd5e1' }}>
-          Retailer results will appear here when available.
-        </p>
-      </section>
+      <Card className="border" style={{ borderColor: 'var(--border-hairline-strong)', background: 'var(--bg-panel)' }}>
+        <CardContent className="p-8 text-center">
+          <p className="text-[14px] font-medium" style={{ color: 'var(--text-tertiary)' }}>No pricing data available yet</p>
+        </CardContent>
+      </Card>
     );
   }
 
-  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
-  const minPrice = sortedPrices[0].price;
-  const maxPrice = Math.max(...sortedPrices.map((p) => p.price));
-  const savings = Math.max(0, maxPrice - minPrice);
+  const minPrice = Math.min(...prices.map((p) => p.price));
+  const maxPrice = Math.max(...prices.map((p) => p.price));
+  const savings = maxPrice - minPrice;
 
   return (
-    <section
-      className="mb-6 overflow-hidden rounded-3xl border shadow-[0_18px_55px_rgba(15,23,42,0.18)]"
-      style={{
-        borderColor: 'rgba(148, 163, 184, 0.18)',
-        background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(10, 15, 24, 0.96))',
-        boxShadow: '0 18px 55px rgba(2, 6, 23, 0.38)',
-      }}
-    >
-      <div className="flex flex-col gap-3 border-b px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 7%, transparent)' }}>
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
-              Compare prices
-            </h3>
-            <span
-              className="rounded-full px-2 py-1 text-[10px] font-semibold"
-              style={{
-                color: 'var(--accent-signal)',
-                background: 'color-mix(in srgb, var(--accent-signal) 9%, transparent)',
-              }}
-            >
-              {prices.length} options
-            </span>
+    <Card className="overflow-hidden border transition-all duration-300" style={{ borderColor: 'var(--border-hairline-strong)', background: 'var(--bg-panel)' }}>
+      <CardHeader
+        className="flex flex-row items-center justify-between gap-3 px-6 py-4"
+        style={{ borderBottom: '1px solid var(--border-hairline)', background: 'var(--bg-panel-raised)' }}
+      >
+        <h3 className="font-display text-[17px] font-bold" style={{ color: 'var(--text-primary)' }}>
+          Retailer comparison
+        </h3>
+
+        <Badge className="border-0 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-diagnostic)', background: 'var(--accent-diagnostic-dim)' }}>
+          Save ₹{savings.toLocaleString('en-IN')}
+        </Badge>
+      </CardHeader>
+
+      <CardContent className="p-0">
+        <Table>
+          <TableBody>
+            {prices.map((price, idx) => (
+              <TableRow key={idx} className={idx === 0 ? 'bg-[color:var(--accent-diagnostic-dim)]' : ''}>
+                <TableCell className="w-12 align-middle">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-lg font-mono text-[11px] font-bold"
+                    style={{
+                      color: idx === 0 ? 'var(--accent-diagnostic)' : 'var(--text-tertiary)',
+                      background: idx === 0 ? 'var(--accent-diagnostic-dim)' : 'var(--bg-panel-raised)',
+                    }}
+                  >
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                </TableCell>
+
+                <TableCell className="min-w-[180px] align-middle">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-display text-[15px] font-bold break-words whitespace-normal" style={{ color: 'var(--text-primary)' }}>
+                        {price.retailer}
+                      </span>
+                      {idx === 0 && (
+                        <Badge className="border-0 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider" style={{ background: 'var(--accent-diagnostic)', color: '#0a0c10' }}>
+                          Best
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="font-mono text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                      ★ {price.rating} · {price.delivery}
+                    </div>
+                  </div>
+                </TableCell>
+
+                <TableCell className="align-middle text-right">
+                  <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-end">
+                    <span className="font-mono text-[16px] font-bold sm:text-[18px]" style={{ color: idx === 0 ? 'var(--accent-diagnostic)' : 'var(--text-primary)' }}>
+                      ₹{price.price.toLocaleString('en-IN')}
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="min-w-[72px] border-[color:var(--border-hairline)] text-[11px] font-bold uppercase tracking-wider"
+                      style={{ color: 'var(--accent-signal)', background: 'var(--accent-signal-dim)' }}
+                      asChild
+                    >
+                      <a href={price.link} target="_blank" rel="noopener noreferrer">
+                        View
+                      </a>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+
+      <div className="grid gap-3 border-t px-6 py-5 sm:grid-cols-3" style={{ borderColor: 'var(--border-hairline)', background: 'var(--bg-panel-raised)' }}>
+        <div className="rounded-lg border p-3" style={{ background: 'var(--accent-diagnostic-dim)', borderColor: 'var(--border-hairline)' }}>
+          <div className="font-mono text-[9px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
+            Lowest
           </div>
-          <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-            Sorted by lowest total price
-          </p>
+          <div className="font-mono text-[15px] font-bold" style={{ color: 'var(--accent-diagnostic)' }}>
+            ₹{minPrice.toLocaleString('en-IN')}
+          </div>
         </div>
 
-        {savings > 0 && (
-          <div className="rounded-2xl px-3.5 py-2.5" style={{ background: 'color-mix(in srgb, var(--status-low) 10%, transparent)' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--text-tertiary)' }}>
-              Potential savings
-            </div>
-            <div className="mt-0.5 text-sm font-bold" style={{ color: 'var(--status-low)' }}>
-              ₹{savings.toLocaleString('en-IN')}
-            </div>
+        <div className="rounded-lg border p-3" style={{ background: 'var(--status-medium-dim)', borderColor: 'var(--border-hairline)' }}>
+          <div className="font-mono text-[9px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
+            Highest
           </div>
-        )}
-      </div>
-
-      <div>
-        {sortedPrices.map((price, idx) => (
-          <a
-            key={`${price.retailer}-${idx}`}
-            href={price.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-black/[0.025] sm:px-6"
-            style={{ borderBottom: idx < sortedPrices.length - 1 ? '1px solid color-mix(in srgb, var(--text-primary) 6%, transparent)' : 'none' }}
-          >
-            <div className="flex min-w-0 items-center gap-3.5">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border text-xs font-bold"
-                style={{
-                  borderColor: idx === 0 ? 'color-mix(in srgb, var(--status-low) 18%, transparent)' : 'color-mix(in srgb, var(--text-primary) 8%, transparent)',
-                  background: idx === 0 ? 'color-mix(in srgb, var(--status-low) 8%, transparent)' : 'color-mix(in srgb, var(--text-primary) 2.5%, transparent)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {price.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={price.logo} alt="" className="h-full w-full object-contain p-1.5" />
-                ) : (
-                  price.retailer.slice(0, 1).toUpperCase()
-                )}
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-sm font-semibold" style={{ color: '#f8fafc' }}>
-                    {price.retailer}
-                  </span>
-                  {idx === 0 && (
-                    <span
-                      className="rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em]"
-                      style={{ color: 'var(--status-low)', background: 'color-mix(in srgb, var(--status-low) 10%, transparent)' }}
-                    >
-                      Best price
-                    </span>
-                  )}
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                  <span>★ {price.rating}</span>
-                  <span>•</span>
-                  <span>{price.delivery}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex shrink-0 items-center gap-3">
-              <span className="text-sm font-bold sm:text-base" style={{ color: idx === 0 ? 'var(--status-low)' : '#f8fafc' }}>
-                ₹{price.price.toLocaleString('en-IN')}
-              </span>
-              <span
-                className="hidden rounded-lg px-2.5 py-2 text-[11px] font-semibold sm:inline-flex"
-                style={{
-                  background: 'color-mix(in srgb, var(--text-primary) 5%, transparent)',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                View
-              </span>
-              <svg className="h-4 w-4 opacity-40 transition group-hover:translate-x-0.5 group-hover:opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-              </svg>
-            </div>
-          </a>
-        ))}
-      </div>
-
-      <div
-        className="grid grid-cols-3 gap-px border-t"
-        style={{
-          borderColor: 'color-mix(in srgb, var(--text-primary) 7%, transparent)',
-          background: 'color-mix(in srgb, var(--text-primary) 6%, transparent)',
-        }}
-      >
-        {[
-          ['Lowest', minPrice, 'var(--status-low)'],
-          ['Highest', maxPrice, 'var(--text-primary)'],
-          ['Difference', savings, 'var(--accent-signal)'],
-        ].map(([label, value, color]) => (
-          <div key={String(label)} className="bg-[var(--surface-card,rgba(255,255,255,0.88))] px-4 py-4 sm:px-5">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>
-              {label}
-            </div>
-            <div className="mt-1 text-sm font-bold sm:text-base" style={{ color: String(color) === 'var(--text-primary)' ? '#f8fafc' : String(color) }}>
-              ₹{Number(value).toLocaleString('en-IN')}
-            </div>
+          <div className="font-mono text-[15px] font-bold" style={{ color: 'var(--status-medium)' }}>
+            ₹{maxPrice.toLocaleString('en-IN')}
           </div>
-        ))}
+        </div>
+
+        <div className="rounded-lg border p-3" style={{ background: 'var(--accent-signal-dim)', borderColor: 'var(--border-hairline)' }}>
+          <div className="font-mono text-[9px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-tertiary)' }}>
+            Spread
+          </div>
+          <div className="font-mono text-[15px] font-bold" style={{ color: 'var(--accent-signal)' }}>
+            ₹{savings.toLocaleString('en-IN')}
+          </div>
+        </div>
       </div>
-    </section>
+    </Card>
   );
 };

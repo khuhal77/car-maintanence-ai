@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { Tooltip } from '@/components/ui/tooltip';
+
 export type PartEntry = {
   code: string;
   name: string;
@@ -74,7 +76,7 @@ export function PartMap({
             style={{ cursor: 'pointer' }}
             tabIndex={0}
             role="button"
-            aria-label={part.name}
+            aria-label={`${part.name}: ${part.detects}`}
             onFocus={() => {
               setFocusCode(part.code);
               onHover(part.code);
@@ -84,6 +86,33 @@ export function PartMap({
               onHover(null);
             }}
           >
+            <foreignObject x={part.x - 18} y={part.y - 18} width={36} height={36}>
+              <Tooltip
+                content={
+                  <div className="space-y-1 text-left">
+                    <div className="font-display text-[11px] font-bold leading-none text-foreground">{part.name}</div>
+                    <div className="text-[9px] leading-relaxed text-muted-foreground">{part.detects}</div>
+                  </div>
+                }
+                className="pointer-events-none h-full w-full"
+              >
+                <button
+                  type="button"
+                  aria-label={`${part.name}: ${part.detects}`}
+                  className="block h-full w-full rounded-full bg-transparent opacity-0 outline-none focus-visible:opacity-100"
+                  onClick={() => onSelect(part.code)}
+                  onFocus={() => {
+                    setFocusCode(part.code);
+                    onHover(part.code);
+                  }}
+                  onBlur={() => {
+                    setFocusCode(null);
+                    onHover(null);
+                  }}
+                />
+              </Tooltip>
+            </foreignObject>
+
             <circle cx={part.x} cy={part.y} r="16" fill="transparent" />
             <circle
               cx={part.x}

@@ -1,6 +1,13 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApi } from '@/contexts/ApiContext';
 
 interface VehicleAssistantProps {
@@ -22,83 +29,24 @@ interface ChatMessage {
   text: string;
 }
 
-function TypingMessage({ text, speed = 12 }: { text: string; speed?: number }) {
-  const [visibleText, setVisibleText] = useState('');
-
-  useEffect(() => {
-    let index = 0;
-    setVisibleText('');
-
-    const timer = window.setInterval(() => {
-      index += 1;
-      setVisibleText(text.slice(0, index));
-
-      if (index >= text.length) window.clearInterval(timer);
-    }, speed);
-
-    return () => window.clearInterval(timer);
-  }, [text, speed]);
-
-  return (
-    <span>
-      {visibleText}
-      {visibleText.length < text.length && (
-        <span
-          aria-hidden="true"
-          className="ml-0.5 inline-block h-4 w-px animate-pulse align-[-2px]"
-          style={{ background: 'var(--accent-diagnostic)' }}
-        />
-      )}
-    </span>
-  );
-}
-
-function AssistantAvatar() {
-  return (
-    <div
-      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-      style={{
-        background: 'color-mix(in srgb, var(--accent-diagnostic) 11%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--accent-diagnostic) 18%, transparent)',
-        color: 'var(--accent-diagnostic)',
-      }}
-      aria-hidden="true"
-    >
-      <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 4h6M8 8h8M7 12h10M8 16h8M10 20h4M5 4h1M18 4h1M5 20h1M18 20h1" />
-      </svg>
-    </div>
-  );
-}
-
 export function VehicleAssistant({ diagnosis }: VehicleAssistantProps) {
   const { chatWithVehicleAssistant, loading } = useApi();
   const issue = diagnosis.issue || 'Could not identify the vehicle issue clearly.';
-  const recommendation =
-    diagnosis.recommendation ||
-    'Please inspect the vehicle with a mechanic to confirm the next steps.';
+  const recommendation = diagnosis.recommendation || 'Please inspect the vehicle with a mechanic to confirm the next steps.';
 
   const defaultBotMessage = useMemo(
-    () =>
-      `I reviewed the vehicle condition. The issue appears to be: ${issue} The recommended solution is: ${recommendation}`,
+    () => `I reviewed the vehicle condition. The issue appears to be: ${issue} The recommended solution is: ${recommendation}`,
     [issue, recommendation],
   );
 
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: 1, sender: 'bot', text: defaultBotMessage },
+    {
+      id: 1,
+      sender: 'bot',
+      text: defaultBotMessage,
+    },
   ]);
   const [input, setInput] = useState('');
-  const [typingId, setTypingId] = useState<number | null>(1);
-
-  useEffect(() => {
-    setMessages((current) => {
-      if (current.length === 1 && current[0].sender === 'bot') {
-        return [{ id: 1, sender: 'bot', text: defaultBotMessage }];
-      }
-      return current;
-    });
-    setTypingId(1);
-  }, [defaultBotMessage]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -113,7 +61,6 @@ export function VehicleAssistant({ diagnosis }: VehicleAssistantProps) {
 
     setMessages((current) => [...current, userMessage]);
     setInput('');
-    setTypingId(null);
 
     try {
       const response = await chatWithVehicleAssistant(trimmed, diagnosis);
@@ -122,171 +69,131 @@ export function VehicleAssistant({ diagnosis }: VehicleAssistantProps) {
         sender: 'bot',
         text: response.reply,
       };
-
       setMessages((current) => [...current, botReply]);
-      setTypingId(botReply.id);
     } catch {
       const errorReply: ChatMessage = {
         id: Date.now() + 2,
         sender: 'bot',
         text: `I couldn’t reach the assistant right now. Based on the diagnosis, the main issue is: ${issue}. Solution: ${recommendation}`,
       };
-
       setMessages((current) => [...current, errorReply]);
-      setTypingId(errorReply.id);
     }
   };
 
   return (
-    <section
-      className="mb-6 overflow-hidden rounded-3xl border shadow-[0_18px_55px_rgba(15,23,42,0.10)]"
-      style={{
-        borderColor: 'color-mix(in srgb, var(--accent-diagnostic) 14%, var(--text-primary) 7%)',
-        background: 'var(--surface-card, rgba(255,255,255,0.88))',
-      }}
-    >
-      <header className="flex items-center justify-between gap-4 border-b px-5 py-4 sm:px-6" style={{ borderColor: 'color-mix(in srgb, var(--text-primary) 7%, transparent)' }}>
-        <div className="flex min-w-0 items-center gap-3">
-          <AssistantAvatar />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                Vehicle Assistant
-              </h2>
-              <span
-                className="rounded-full px-2 py-1 text-[10px] font-semibold"
-                style={{
-                  background: 'color-mix(in srgb, var(--accent-diagnostic) 10%, transparent)',
-                  color: 'var(--accent-diagnostic)',
-                }}
-              >
-                {loading ? 'Thinking' : 'Solution mode'}
-              </span>
-            </div>
-            <p className="mt-0.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              Ask follow-up questions about this diagnosis
-            </p>
-          </div>
+    <Card className="overflow-hidden border transition-all duration-300" style={{ borderColor: 'var(--border-hairline-strong)', background: 'var(--bg-panel)' }}>
+      <CardHeader
+        className="flex flex-row items-center justify-between gap-3 px-6 py-4"
+        style={{ background: 'var(--accent-diagnostic-dim)', borderBottom: '2px solid var(--accent-diagnostic)' }}
+      >
+        <div className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-diagnostic)' }}>
+          <span className="h-2 w-2 rounded-full pulse-dot" style={{ background: 'var(--accent-diagnostic)' }} />
+          Vehicle Assistant
         </div>
-      </header>
 
-      <div className="max-h-[430px] min-h-[260px] space-y-5 overflow-y-auto px-4 py-5 sm:px-6">
-        {messages.map((message) => {
-          const isBot = message.sender === 'bot';
-          const isTyping = isBot && typingId === message.id;
+        <Badge className="border-0 px-3 py-1 font-mono text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)', background: 'var(--bg-panel-raised)' }}>
+          {loading ? 'thinking…' : 'solution mode'}
+        </Badge>
+      </CardHeader>
 
-          return (
+      <ScrollArea className="h-[400px] bg-[color:var(--bg-base)] p-6" style={{ background: 'var(--bg-base)' }}>
+        <div className="space-y-4">
+          {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${isBot ? 'justify-start' : 'justify-end'}`}
-              aria-live={isTyping ? 'polite' : undefined}
+              className="flex animate-fadeIn gap-3"
+              style={{ justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start' }}
             >
-              {isBot && <AssistantAvatar />}
+              {message.sender === 'bot' && (
+                <Avatar className="mt-0.5 h-8 w-8 border border-[color:var(--accent-diagnostic)] bg-[color:var(--accent-diagnostic-dim)]">
+                  <AvatarFallback className="bg-transparent text-[color:var(--accent-diagnostic)]">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 20 20">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" />
+                    </svg>
+                  </AvatarFallback>
+                </Avatar>
+              )}
 
-              <div className={`max-w-[82%] sm:max-w-[72%] ${isBot ? '' : 'order-first'}`}>
-                <div
-                  className="rounded-2xl px-4 py-3 text-sm leading-6"
-                  style={
-                    isBot
-                      ? {
-                          color: '#f8fafc',
-                          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(10, 15, 24, 0.92))',
-                          border: '1px solid rgba(52, 211, 153, 0.22)',
-                          borderTopLeftRadius: '7px',
-                        }
-                      : {
-                          color: '#ffffff',
-                          background: 'linear-gradient(135deg, var(--accent-signal), #e58b2c)',
-                          borderTopRightRadius: '7px',
-                          boxShadow: '0 8px 22px rgba(0,0,0,0.14)',
-                        }
-                  }
-                >
-                  {isTyping ? <TypingMessage text={message.text} /> : message.text}
-                </div>
+              <div
+                className="max-w-[80%] whitespace-normal break-words px-4 py-3 text-[14px] leading-relaxed"
+                style={{
+                  background: message.sender === 'user' ? 'var(--accent-signal)' : 'var(--bg-panel-raised)',
+                  border: message.sender === 'user' ? 'none' : '1px solid var(--border-hairline)',
+                  borderLeft: message.sender === 'user' ? 'none' : '3px solid var(--accent-diagnostic)',
+                  color: message.sender === 'user' ? '#0a0c10' : 'var(--text-primary)',
+                  fontWeight: message.sender === 'user' ? 600 : 400,
+                  borderRadius: message.sender === 'user' ? '18px 18px 4px 18px' : '4px 18px 18px 4px',
+                }}
+              >
+                {message.text}
               </div>
 
-              {!isBot && (
-                <div
-                  className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                  style={{
-                    color: 'var(--accent-signal)',
-                    background: 'color-mix(in srgb, var(--accent-signal) 9%, transparent)',
-                    border: '1px solid color-mix(in srgb, var(--accent-signal) 15%, transparent)',
-                  }}
-                  aria-hidden="true"
-                >
-                  <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-                  </svg>
-                </div>
+              {message.sender === 'user' && (
+                <Avatar className="mt-0.5 h-8 w-8 border border-[color:var(--border-hairline-strong)] bg-[color:var(--bg-panel-raised)]">
+                  <AvatarFallback className="bg-transparent text-[color:var(--text-secondary)]">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </AvatarFallback>
+                </Avatar>
               )}
             </div>
-          );
-        })}
+          ))}
 
-        {loading && (
-          <div className="flex items-center gap-3">
-            <AssistantAvatar />
-            <div
-              className="rounded-2xl rounded-tl-md border px-4 py-3"
-              style={{
-                background: 'color-mix(in srgb, var(--accent-diagnostic) 4%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--accent-diagnostic) 10%, transparent)',
-              }}
-            >
-              <div className="flex items-center gap-1.5">
-                {[0, 150, 300].map((delay) => (
-                  <span
-                    key={delay}
-                    className="h-1.5 w-1.5 animate-bounce rounded-full"
-                    style={{ background: 'var(--accent-diagnostic)', animationDelay: `${delay}ms` }}
-                  />
-                ))}
+          {loading && (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 border border-[color:var(--accent-diagnostic)] bg-[color:var(--accent-diagnostic-dim)]">
+                <AvatarFallback className="bg-transparent text-[color:var(--accent-diagnostic)]">
+                  <svg className="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 20 20">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" />
+                  </svg>
+                </AvatarFallback>
+              </Avatar>
+
+              <div
+                className="flex items-center gap-1.5 px-4 py-3"
+                style={{ background: 'var(--bg-panel-raised)', border: '1px solid var(--border-hairline)', borderLeft: '3px solid var(--accent-diagnostic)', borderRadius: '4px 18px 18px 4px' }}
+              >
+                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-diagnostic)', animationDelay: '0ms' }} />
+                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-diagnostic)', animationDelay: '150ms' }} />
+                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-diagnostic)', animationDelay: '300ms' }} />
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </ScrollArea>
 
-      <form
-        onSubmit={handleSubmit}
-        className="border-t p-3 sm:p-4"
-        style={{
-          borderColor: 'color-mix(in srgb, var(--text-primary) 7%, transparent)',
-          background: 'color-mix(in srgb, var(--text-primary) 1.5%, transparent)',
-        }}
-      >
-        <div
-          className="flex items-end gap-2 rounded-2xl border p-1.5 transition focus-within:ring-4"
-          style={{
-            borderColor: 'rgba(34, 224, 171, 0.24)',
-            background: 'rgba(15, 23, 42, 0.96)',
-            boxShadow: 'inset 0 0 0 1px rgba(148, 163, 184, 0.08)',
-          }}
-        >
-          <input
+      <CardContent className="border-t p-3.5" style={{ borderColor: 'var(--border-hairline)', background: 'var(--bg-panel-raised)' }}>
+        <form onSubmit={handleSubmit} className="flex items-center gap-2 rounded-full border py-1.5 pl-4 pr-1.5 transition-colors" style={{ background: 'var(--bg-base)', borderColor: 'var(--border-hairline-strong)' }}>
+          <Input
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Ask about the issue, repair, or next step…"
+            placeholder="Ask about the issue or solution…"
             disabled={loading}
-            className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            style={{ color: '#f8fafc', caretColor: 'var(--accent-diagnostic)' }}
-            aria-label="Message Vehicle Assistant"
+            className="h-10 flex-1 border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            style={{ color: 'var(--text-primary)' }}
           />
-          <button
+
+          <Button
             type="submit"
-            disabled={loading || !input.trim()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45"
-            style={{ background: 'var(--accent-diagnostic)' }}
-            aria-label="Send message"
+            disabled={loading}
+            variant="default"
+            size="icon"
+            className="h-10 w-10 rounded-full transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105"
+            style={{ background: 'var(--accent-diagnostic)', color: '#0a0c10' }}
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m4 12 15-8-3 16-4-6-8-2Zm8 0 4 4" />
-            </svg>
-          </button>
-        </div>
-      </form>
-    </section>
+            {loading ? (
+              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            ) : (
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z" />
+              </svg>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

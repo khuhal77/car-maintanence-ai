@@ -1,41 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 :root {
   /* Base surfaces — deep instrument-panel black, not pure black so panels can separate */
-  --bg-base: #0a0c10;
-  --bg-panel: #12161d;
-  --bg-panel-raised: #191f28;
-  --border-hairline: #232a34;
-  --border-hairline-strong: #323b48;
+  --bg-base: 220 22% 8%;
+  --bg-panel: 220 18% 13%;
+  --bg-panel-raised: 220 15% 17%;
+  --border-hairline: 220 14% 23%;
+  --border-hairline-strong: 220 15% 29%;
 
-  --text-primary: #edf1f4;
-  --text-secondary: #8a93a3;
-  --text-tertiary: #525b68;
+  --text-primary: 210 25% 96%;
+  --text-secondary: 220 10% 62%;
+  --text-tertiary: 220 10% 40%;
 
   /* Dashboard warning amber — the primary signal color, like a check-engine light */
-  --accent-signal: #ffa63d;
-  --accent-signal-dim: #ffa63d1f;
+  --accent-signal: 35 100% 61%;
+  --accent-signal-dim: 35 100% 61% / 0.12;
 
   /* Diagnostic teal — "reading is nominal" */
-  --accent-diagnostic: #22e0ab;
-  --accent-diagnostic-dim: #22e0ab1f;
+  --accent-diagnostic: 163 76% 48%;
+  --accent-diagnostic-dim: 163 76% 48% / 0.12;
 
   /* Scan cyan — used only for active/interactive scan states (new) */
-  --accent-cyan: #3ee3ff;
-  --accent-cyan-dim: #3ee3ff1a;
+  --accent-cyan: 191 94% 62%;
+  --accent-cyan-dim: 191 94% 62% / 0.10;
 
-  --status-high: #ff4d5e;
-  --status-high-dim: #ff4d5e1f;
-  --status-medium: #ffb020;
-  --status-medium-dim: #ffb0201f;
-  --status-low: #22e0ab;
-  --status-low-dim: #22e0ab1f;
-
+  --status-high: 352 100% 66%;
+  --status-high-dim: 352 100% 66% / 0.12;
+  --status-medium: 38 100% 57%;
+  --status-medium-dim: 38 100% 57% / 0.12;
+  --status-low: 163 76% 48%;
+  --status-low-dim: 163 76% 48% / 0.12;
   --accent-rgb: 255, 166, 61;
+
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-panel);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-panel);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-signal);
+  --primary-foreground: 220 18% 9%;
+  --secondary: var(--bg-panel-raised);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-panel);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--accent-diagnostic);
+  --accent-foreground: 220 18% 9%;
+  --destructive: var(--status-high);
+  --destructive-foreground: 0 0% 100%;
+  --border: var(--border-hairline);
+  --input: var(--border-hairline);
+  --ring: var(--accent-cyan);
+  --radius: 0.75rem;
 }
 
 html {
@@ -207,3 +227,16 @@ body {
 .rail-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* @layer base {
+  * {
+    /* @apply  outline-ring/50; */
+  /* } */ 
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+  }

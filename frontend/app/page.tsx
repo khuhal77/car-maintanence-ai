@@ -2,10 +2,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { ImageUpload } from '@/components/ImageUpload';
 import { ChatWidget } from '@/components/ChatWidget';
 import { useApi } from '@/contexts/ApiContext';
 import { PartMap, PART_INDEX } from '../app/PartMap';
+
+const NAV_ITEMS = [
+  { href: '#console', label: 'Scan' },
+  { href: '#part-map', label: 'Parts' },
+  { href: '#how-it-works', label: 'Process' },
+];
 
 const READOUTS = [
   { value: '4', label: 'Retailers compared' },
@@ -59,69 +70,77 @@ export default function Home() {
     <main className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
       {/* Top bar */}
       <header
-        className="border-b sticky top-0 z-20 backdrop-blur-xl"
+        className="sticky top-0 z-20 border-b backdrop-blur-xl"
         style={{
           borderColor: 'var(--border-hairline)',
-          background: 'rgba(10, 12, 16, 0.85)',
+          background: 'rgba(10, 12, 16, 0.82)',
         }}
       >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex items-center gap-3 min-w-0">
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center font-mono text-sm font-bold"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-sm font-bold"
               style={{
                 background: 'var(--bg-panel-raised)',
-                border: '1px solid var(--accent-signal)',
+                borderColor: 'var(--accent-signal)',
                 color: 'var(--accent-signal)',
               }}
             >
               ◈
             </div>
-            <div>
-              <span className="font-display font-bold text-[15px] tracking-tight block leading-none">
+            <div className="min-w-0">
+              <span className="block font-display text-[15px] font-bold leading-none tracking-tight text-foreground">
                 VEHIQ
               </span>
-              <span className="font-mono text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
                 Diagnostics
               </span>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 font-mono text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-            <a href="#console" className="hover:text-[var(--text-primary)] transition-colors">Scan</a>
-            <a href="#part-map" className="hover:text-[var(--text-primary)] transition-colors">Parts</a>
-            <a href="#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">Process</a>
+          <nav className="hidden items-center gap-2 md:flex" aria-label="Main navigation">
+            {NAV_ITEMS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-transparent px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-[var(--border-hairline)] hover:bg-[var(--bg-panel)] hover:text-[var(--text-primary)]"
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
 
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{ background: 'var(--accent-diagnostic-dim)', border: '1px solid var(--accent-diagnostic)' }}
+          <Badge
+            className="items-center gap-2 border px-3 py-1.5 font-mono text-[10px] tracking-[0.2em]"
+            style={{
+              background: 'var(--accent-diagnostic-dim)',
+              borderColor: 'var(--accent-diagnostic)',
+              color: 'var(--accent-diagnostic)',
+            }}
           >
-            <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-diagnostic)' }} />
-            <span className="font-mono text-[10px] font-medium tracking-wide" style={{ color: 'var(--accent-diagnostic)' }}>
-              MODEL ONLINE
-            </span>
-          </div>
+            <span className="h-1.5 w-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-diagnostic)' }} />
+            MODEL ONLINE
+          </Badge>
         </div>
       </header>
 
       {/* Hero / console */}
       <section id="console" className="scan-texture border-b" style={{ borderColor: 'var(--border-hairline)' }}>
         <div className="max-w-6xl mx-auto px-6 pt-20 pb-16">
-          <div className="max-w-2xl mb-14 animate-fadeIn">
+          <div className="mb-14 max-w-2xl animate-fadeIn">
             <div
-              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-full mb-7"
+              className="mb-7 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em]"
               style={{
                 background: 'var(--accent-signal-dim)',
-                border: '1px solid var(--accent-signal)',
+                borderColor: 'var(--accent-signal)',
                 color: 'var(--accent-signal)',
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
+              <span className="h-1.5 w-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
               Image-based part diagnostics
             </div>
 
-            <h1 className="font-display font-bold text-[44px] sm:text-[58px] leading-[1.08] tracking-tight mb-6">
+            <h1 className="mb-6 max-w-xl font-display text-[44px] font-bold leading-[1.08] tracking-tight sm:text-[58px]">
               Point your camera
               <br />
               <span
@@ -136,120 +155,143 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="text-[17px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <p className="max-w-xl text-[17px] leading-relaxed text-balance" style={{ color: 'var(--text-secondary)' }}>
               Upload a photo of any car or bike part. The model reads the wear pattern, flags the
               issue, and lines up replacement parts against live retailer pricing.
             </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button
+                type="button"
+                className="h-10 rounded-full px-5 text-[12px] font-medium uppercase tracking-[0.16em]"
+                style={{ background: 'var(--accent-signal)', color: '#0a0c10' }}
+              >
+                Scan vehicle
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 rounded-full border px-5 text-[12px] font-medium uppercase tracking-[0.16em]"
+                style={{ borderColor: 'var(--border-hairline-strong)', color: 'var(--text-primary)' }}
+              >
+                View process
+              </Button>
+            </div>
           </div>
 
           {/* Console: upload on the left, live readouts on the right */}
-          <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-6">
-            <div
-              className="viewfinder relative p-8 rounded-2xl border animate-fadeIn"
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+            <Card
+              className="viewfinder relative animate-fadeIn border"
               style={{
                 background: 'var(--bg-panel)',
                 borderColor: 'var(--border-hairline-strong)',
               }}
             >
-              <div className="vf-tr" />
-              <div className="vf-bl" />
-
-              {isBusy && <div className="scan-sweep" style={{ top: 0 }} />}
-
-              <div
-                className="flex items-center justify-between mb-6 font-mono text-[10px] uppercase tracking-wider"
-                style={{ color: 'var(--text-tertiary)' }}
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: isBusy ? 'var(--accent-cyan)' : 'var(--accent-diagnostic)' }}
-                  />
-                  {isBusy ? 'Scanning input' : 'Scan input'}
-                </span>
-                <span>JPG · PNG · WEBP</span>
-              </div>
-
-              <ImageUpload onImageSelect={handleImageSelect} loading={isBusy} />
-
-              {error && (
-                <div
-                  className="mt-6 p-4 rounded-lg font-mono text-[12px] border animate-fadeIn"
-                  style={{
-                    background: 'var(--status-high-dim)',
-                    borderColor: 'var(--status-high)',
-                    color: 'var(--status-high)',
-                  }}
-                >
-                  <div className="font-bold mb-1">⚠ Error</div>
-                  {error}
+              <CardHeader className="px-6 pb-0 pt-6">
+                <div className="flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-tertiary)' }}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: isBusy ? 'var(--accent-cyan)' : 'var(--accent-diagnostic)' }}
+                    />
+                    {isBusy ? 'Scanning input' : 'Scan input'}
+                  </span>
+                  <span>JPG · PNG · WEBP</span>
                 </div>
-              )}
-            </div>
+              </CardHeader>
 
-            {/* Live readout stack, replaces the old flat stat grid */}
+              <CardContent className="relative p-6 pt-4">
+                <div className="vf-tr" />
+                <div className="vf-bl" />
+                {isBusy && <div className="scan-sweep" style={{ top: 0 }} />}
+
+                <ImageUpload onImageSelect={handleImageSelect} loading={isBusy} />
+
+                {error && (
+                  <div
+                    className="mt-6 animate-fadeIn rounded-lg border p-4 font-mono text-[12px] leading-relaxed"
+                    style={{
+                      background: 'var(--status-high-dim)',
+                      borderColor: 'var(--status-high)',
+                      color: 'var(--status-high)',
+                    }}
+                  >
+                    <div className="mb-1 font-bold">⚠ Error</div>
+                    {error}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <div className="flex flex-col gap-3">
               {READOUTS.map((r) => (
-                <div
+                <Card
                   key={r.label}
-                  className="flex-1 flex items-center justify-between px-5 py-4 rounded-xl border transition-colors hover:border-[var(--accent-signal)]"
+                  className="border transition-colors hover:border-[var(--accent-signal)]"
                   style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-hairline)' }}
                 >
-                  <span className="font-mono text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
-                    {r.label}
-                  </span>
-                  <span className="font-display font-bold text-[22px]" style={{ color: 'var(--accent-signal)' }}>
-                    {r.value}
-                  </span>
-                </div>
+                  <CardHeader className="flex flex-row items-center justify-between gap-2 px-5 py-4">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: 'var(--text-tertiary)' }}>
+                      {r.label}
+                    </span>
+                    <span className="font-display text-[22px] font-bold" style={{ color: 'var(--accent-signal)' }}>
+                      {r.value}
+                    </span>
+                  </CardHeader>
+                </Card>
               ))}
-              <div
-                className="flex-1 px-5 py-4 rounded-xl border font-mono text-[12px] leading-relaxed"
-                style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-hairline)', color: 'var(--text-secondary)' }}
+
+              <Card
+                className="border"
+                style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-hairline)' }}
               >
-                <span style={{ color: 'var(--accent-diagnostic)' }}>✓</span> Estimates only — confirm
-                findings with a certified mechanic before repair.
-              </div>
+                <CardContent className="px-5 py-4 font-mono text-[12px] leading-relaxed text-wrap" style={{ color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--accent-diagnostic)' }}>✓</span> Estimates only — confirm
+                  findings with a certified mechanic before repair.
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </section>
 
       {/* Interactive part map — the signature element */}
-      <section id="part-map" className="max-w-6xl mx-auto px-6 py-20">
+      <section id="part-map" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="mb-10">
-          <h2 className="font-display font-bold text-[26px] tracking-tight mb-2">Recognized parts</h2>
-          <p className="font-mono text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+          <h2 className="mb-2 font-display text-[26px] font-bold tracking-tight">Recognized parts</h2>
+          <p className="font-mono text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
             Tap a point on the diagram, or a part below, to see what the model checks for.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-6 items-stretch">
-          <div
-            className="p-8 rounded-2xl border scan-texture"
-            style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-hairline-strong)' }}
-          >
+        <div className="grid items-stretch gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <Card className="scan-texture border p-8" style={{ background: 'var(--bg-panel)', borderColor: 'var(--border-hairline-strong)' }}>
             <PartMap activeCode={hoveredPart} onHover={setHoveredPart} onSelect={setSelectedPart} />
-          </div>
+          </Card>
 
-          <div
-            className="p-6 rounded-2xl border flex flex-col justify-between"
+          <Card
+            className="flex flex-col justify-between border"
             style={{ background: 'var(--bg-panel-raised)', borderColor: 'var(--border-hairline)' }}
           >
-            <div key={activePart.code} className="animate-fadeIn">
-              <div className="font-mono text-[10px] mb-2 font-bold tracking-wider" style={{ color: 'var(--accent-cyan)' }}>
-                {activePart.code}
+            <CardContent className="p-6">
+              <div key={activePart.code} className="animate-fadeIn">
+                <div className="mb-2 font-mono text-[10px] font-bold tracking-[0.18em]" style={{ color: 'var(--accent-cyan)' }}>
+                  {activePart.code}
+                </div>
+                <div className="mb-3 font-display text-[20px] font-bold">{activePart.name}</div>
+                <p className="text-[13px] leading-relaxed text-wrap" style={{ color: 'var(--text-secondary)' }}>
+                  {activePart.detects}
+                </p>
               </div>
-              <div className="font-display font-bold text-[20px] mb-3">{activePart.name}</div>
-              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                {activePart.detects}
-              </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
+        <Separator className="my-6 h-px" style={{ background: 'var(--border-hairline)' }} />
+
         {/* horizontal selector rail */}
-        <div className="rail-scroll flex gap-3 mt-6 overflow-x-auto pb-2">
+        <div className="rail-scroll mt-6 flex gap-3 overflow-x-auto pb-2">
           {PART_INDEX.map((part) => {
             const isActive = part.code === selectedPart;
             return (
@@ -280,10 +322,10 @@ export default function Home() {
 
       {/* How it works — sequential rail, numbering is meaningful here */}
       <section id="how-it-works" className="border-t" style={{ borderColor: 'var(--border-hairline)' }}>
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="font-display font-bold text-[26px] tracking-tight mb-14">How it works</h2>
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <h2 className="mb-14 font-display text-[26px] font-bold tracking-tight">How it works</h2>
 
-          <div className="relative grid md:grid-cols-3 gap-8">
+          <div className="relative grid gap-8 md:grid-cols-3">
             <div
               className="rail-line hidden md:block absolute top-6 left-[16.5%] right-[16.5%] h-px"
               style={{ background: 'var(--border-hairline-strong)' }}
