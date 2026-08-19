@@ -8,13 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from routes.diagnose import router as diagnose_router
 from routes.prices import router as prices_router
-from models.diagnosis import init_model
+from routes.chat import router as chat_router
+from routes.sensor_fusion import router as sensor_fusion_router
+from routes.sensor_diagnose import router as sensor_diagnose_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,6 +42,9 @@ app.add_middleware(
 
 app.include_router(diagnose_router)
 app.include_router(prices_router)
+app.include_router(chat_router)
+app.include_router(sensor_fusion_router)
+app.include_router(sensor_diagnose_router)
 
 
 @app.get("/")
@@ -70,6 +72,10 @@ async def api_info():
             {"method": "POST", "path": "/api/diagnose/upload", "description": "Diagnose car part from file upload"},
             {"method": "POST", "path": "/api/prices", "description": "Get price comparison for part"},
             {"method": "GET", "path": "/api/prices/retailers", "description": "Get list of retailers"},
+            {"method": "POST", "path": "/api/chat", "description": "Chat with the vehicle maintenance assistant"},
+            {"method": "POST", "path": "/api/diagnose-fusion", "description": "Fused diagnosis combining photo + OBD-II sensor data"},
+            {"method": "POST", "path": "/api/sensor-diagnose", "description": "Mock-sensor-only diagnosis (independent pipeline, no photo/hardware dependency)"},
+            {"method": "GET", "path": "/api/sensor-diagnose/scenarios", "description": "List available mock sensor scenarios"},
         ]
     }
 
@@ -90,14 +96,6 @@ async def startup_event():
     logger.info("=" * 50)
     logger.info("CORS enabled for localhost:3000")
     logger.info("Routes registered: /api/diagnose, /api/prices")
-    logger.info("Initializing ML models...")
-    
-    # Initialize the MobileNetV2 model for car part classification
-    if init_model():
-        logger.info("✓ ML models initialized successfully")
-    else:
-        logger.warning("⚠ ML models failed to initialize - predictions may be unavailable")
-    
     logger.info("=" * 50)
 
 

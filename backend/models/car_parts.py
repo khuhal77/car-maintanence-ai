@@ -1,6 +1,6 @@
 """
 Car Parts Detection using YOLOv8
-Detects car parts using fine-tuned or pretrained models
+Detects car parts and diagnoses issues
 """
 
 import numpy as np
@@ -8,44 +8,18 @@ from PIL import Image
 import io
 import base64
 import logging
-from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Global model instance
-_yolo_model = None
-_model_type = None  # 'fine_tuned' or 'pretrained'
-
-# Load YOLOv8 model (fine-tuned if available, else default)
-def _load_yolo_model():
-    """Load fine-tuned or default YOLOv8 model."""
-    global _yolo_model, _model_type
-    
-    try:
-        from ultralytics import YOLO
-        
-        # Try to load fine-tuned model first
-        fine_tuned_path = 'models/yolo_car_parts/exp/weights/best.pt'
-        if Path(fine_tuned_path).exists():
-            logger.info("Loading fine-tuned YOLOv8 model for car parts...")
-            _yolo_model = YOLO(fine_tuned_path)
-            _model_type = 'fine_tuned'
-            logger.info("✓ Fine-tuned YOLOv8 model loaded")
-        else:
-            # Fall back to default model
-            logger.info("Loading default YOLOv8 Nano model...")
-            _yolo_model = YOLO('yolov8n.pt')
-            _model_type = 'pretrained'
-            logger.info("✓ Default YOLOv8 model loaded")
-        
-        return _yolo_model
-    except Exception as e:
-        logger.warning(f"Could not load YOLOv8 model: {e}")
-        _yolo_model = None
-        return None
-
-model = _load_yolo_model()
+# Load YOLOv8 Nano model (lightweight, free)
+try:
+    from ultralytics import YOLO
+    model = YOLO('yolov8n.pt')
+    logger.info("YOLOv8 model loaded successfully")
+except Exception as e:
+    logger.warning(f"Could not load YOLOv8 model: {e}")
+    model = None
 
 # Mapping from detected COCO objects to car part categories
 # (YOLOv8 default weights are trained on COCO, not car parts specifically,

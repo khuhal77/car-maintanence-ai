@@ -1,0 +1,68 @@
+{
+  "healthy": {
+    "description": "All sensors within normal operating range.",
+    "readings": {
+      "battery_voltage": 13.2,
+      "engine_rpm": 800,
+      "coolant_temp": 90,
+      "oil_pressure": 45,
+      "tire_pressure_fl": 34,
+      "brake_pad_wear": 20
+    }
+  },
+  "battery_degraded": {
+    "description": "Single-sensor anomaly — battery voltage low.",
+    "readings": {
+      "battery_voltage": 11.2,
+      "engine_rpm": 750,
+      "coolant_temp": 91,
+      "oil_pressure": 44,
+      "tire_pressure_fl": 33,
+      "brake_pad_wear": 22
+    }
+  },
+  "brake_wear_high": {
+    "description": "Safety-critical — brake pads significantly worn.",
+    "readings": {
+      "battery_voltage": 13.0,
+      "engine_rpm": 780,
+      "coolant_temp": 89,
+      "oil_pressure": 46,
+      "tire_pressure_fl": 34,
+      "brake_pad_wear": 85
+    }
+  },
+  "overheating": {
+    "description": "Critical severity — engine coolant temperature too high.",
+    "readings": {
+      "battery_voltage": 13.0,
+      "engine_rpm": 2200,
+      "coolant_temp": 118,
+      "oil_pressure": 40,
+      "tire_pressure_fl": 34,
+      "brake_pad_wear": 25
+    }
+  },
+  "low_tire_pressure": {
+    "description": "Low-severity, everyday scenario — one tire under-inflated.",
+    "readings": {
+      "battery_voltage": 13.1,
+      "engine_rpm": 800,
+      "coolant_temp": 90,
+      "oil_pressure": 45,
+      "tire_pressure_fl": 26,
+      "brake_pad_wear": 18
+    }
+  },
+  "multi_fault": {
+    "description": "Multiple simultaneous anomalies — tests primary-issue selection.",
+    "readings": {
+      "battery_voltage": 11.0,
+      "engine_rpm": 850,
+      "coolant_temp": 112,
+      "oil_pressure": 22,
+      "tire_pressure_fl": 27,
+      "brake_pad_wear": 78
+    }
+  }
+}

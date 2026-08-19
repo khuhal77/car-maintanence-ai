@@ -1,0 +1,5 @@
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T14:04:21.981773","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T14:04:21.983666","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T14:04:21.983726","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T14:04:21.983749","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T14:04:21.983771","vehicle_id":"123","confidence":0.95}
