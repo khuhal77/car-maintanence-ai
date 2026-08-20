@@ -95,7 +95,7 @@ async def startup_event():
     logger.info("Car Maintenance AI Backend Starting...")
     logger.info("=" * 50)
     logger.info("CORS enabled for localhost:3000")
-    logger.info("Routes registered: /api/diagnose, /api/prices")
+    logger.info("Routes registered: /api/diagnose, /api/prices, /api/chat, /api/diagnose-fusion, /api/sensor-diagnose")
     logger.info("=" * 50)
 
 

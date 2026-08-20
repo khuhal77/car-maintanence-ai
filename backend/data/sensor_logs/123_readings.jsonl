@@ -3,3 +3,13 @@
 {"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T14:04:21.983726","vehicle_id":"123","confidence":0.95}
 {"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T14:04:21.983749","vehicle_id":"123","confidence":0.95}
 {"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T14:04:21.983771","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T21:52:47.788478","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T21:52:47.790661","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T21:52:47.790822","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T21:52:47.790863","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T21:52:47.790893","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T21:53:13.938346","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T21:53:13.938412","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T21:53:13.938434","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T21:53:13.938454","vehicle_id":"123","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T21:53:13.938473","vehicle_id":"123","confidence":0.95}

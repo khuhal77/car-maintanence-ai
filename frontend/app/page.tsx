@@ -92,19 +92,19 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col gap-3 mb-8">
-              <button
-                onClick={() => router.push('/result')}
-                className="px-6 py-3 rounded font-mono text-[12px] uppercase tracking-wider transition-all"
+              <a
+                href="#upload-viewfinder"
+                className="px-6 py-3 rounded font-mono text-[12px] uppercase tracking-wider text-center transition-all"
                 style={{ background: 'var(--accent-signal)', color: '#0b0f14' }}
               >
                 Photo Diagnosis
-              </button>
+              </a>
               <a
                 href="/sensor-diagnostics"
                 className="px-6 py-3 rounded font-mono text-[12px] uppercase tracking-wider text-center transition-all"
                 style={{ background: 'var(--accent-diagnostic)', color: '#0b0f14' }}
               >
-                OBD-II Sensor Scan
+                Sensor Diagnostics (ML)
               </a>
             </div>
 
@@ -127,7 +127,7 @@ export default function Home() {
           </div>
 
           {/* Upload viewfinder */}
-          <div className="viewfinder p-6" style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-hairline)' }}>
+          <div id="upload-viewfinder" className="viewfinder p-6" style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-hairline)' }}>
             <div className="vf-tr" />
             <div className="vf-bl" />
             <div className="flex items-center justify-between mb-4 font-mono text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>

@@ -1,274 +1,169 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+/**
+ * Floating vehicle assistant chat widget.
+ * Mounted globally in layout.tsx so it's available on every page.
+ * Optionally accepts diagnosisContext (from the result page) to ground
+ * answers in the current diagnosis without the user re-explaining it.
+ */
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useApi } from '@/contexts/ApiContext';
-
-interface ChatMessage {
-  id: number;
-  sender: 'bot' | 'user';
-  text: string;
-}
+import React, { useEffect, useRef, useState } from 'react';
+import { useChat } from '@/contexts/ChatContext';
 
 interface ChatWidgetProps {
-  isCompact?: boolean;
+  diagnosisContext?: Record<string, any>;
 }
 
-export function ChatWidget({ isCompact = false }: ChatWidgetProps) {
-  const { chatWithVehicleAssistant, loading } = useApi();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      sender: 'bot',
-      text: 'Hi! I\'m VEHIQ Assistant. I can help answer questions about car maintenance, parts, diagnosis, and pricing. What would you like to know?',
-    },
-  ]);
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ diagnosisContext }) => {
+  const { messages, sendMessage, loading, error } = useChat();
+  const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [isOpen, setIsOpen] = useState(!isCompact);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading, open]);
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed || loading) return;
-
-    const userMessage: ChatMessage = {
-      id: Date.now(),
-      sender: 'user',
-      text: trimmed,
-    };
-
-    setMessages((current) => [...current, userMessage]);
+  const handleSend = () => {
+    if (!input.trim() || loading) return;
+    const text = input;
     setInput('');
+    sendMessage(text, diagnosisContext);
+  };
 
-    try {
-      const response = await chatWithVehicleAssistant(trimmed, {});
-      const botReply: ChatMessage = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: response.reply,
-      };
-      setMessages((current) => [...current, botReply]);
-    } catch {
-      const errorReply: ChatMessage = {
-        id: Date.now() + 2,
-        sender: 'bot',
-        text: 'Sorry, I couldn\'t process that request. Please try again or contact support.',
-      };
-      setMessages((current) => [...current, errorReply]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
-  if (isCompact && !isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
-        style={{
-          background: 'var(--bg-panel-raised)',
-          border: '1.5px solid var(--accent-signal)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-        }}
-        title="Open chat"
-      >
-        <span
-          className="absolute inset-0 rounded-full animate-ping"
-          style={{ background: 'var(--accent-signal-dim)', animationDuration: '2.5s' }}
-        />
-        <svg className="relative h-6 w-6" fill="none" stroke="var(--accent-signal)" strokeWidth="1.75" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" transform="translate(3 2)" />
-        </svg>
-        <span
-          className="absolute right-0 top-0 h-3 w-3 rounded-full pulse-dot"
-          style={{ background: 'var(--accent-diagnostic)', border: '2px solid var(--bg-base)' }}
-        />
-      </button>
-    );
-  }
-
   return (
-    <Card
-      className="mb-6 w-[360px] max-w-[90vw] overflow-hidden border shadow-2xl transition-all duration-300"
-      style={{
-        borderColor: 'var(--border-hairline-strong)',
-        background: 'var(--bg-panel)',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-      }}
-    >
-      <div
-        className="flex items-center justify-between border-b px-5 py-4"
-        style={{
-          background: 'var(--bg-panel-raised)',
-          borderColor: 'var(--border-hairline)',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Avatar className="h-9 w-9 border border-[color:var(--accent-signal)] bg-[color:var(--accent-signal-dim)]">
-              <AvatarFallback className="bg-transparent text-[color:var(--accent-signal)]">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 20 20">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" />
-                </svg>
-              </AvatarFallback>
-            </Avatar>
-            <span
-              className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full pulse-dot"
-              style={{ background: loading ? 'var(--accent-cyan)' : 'var(--accent-diagnostic)', border: '2px solid var(--bg-panel-raised)' }}
-            />
-          </div>
-          <div>
-            <div className="font-display text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
-              VEHIQ Assistant
-            </div>
-            <div className="font-mono text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-              AI-powered support
-            </div>
-          </div>
-        </div>
+    <>
+      {/* Launcher button */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+          style={{ background: 'var(--accent-signal)', color: '#0b0f14' }}
+          aria-label="Open vehicle assistant chat"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
 
-        <div className="flex items-center gap-3">
-          <Badge className="border-0 bg-transparent px-0 text-[10px] uppercase tracking-wide text-muted-foreground">
-            <span
-              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full pulse-dot"
-              style={{ background: loading ? 'var(--accent-cyan)' : 'var(--accent-diagnostic)' }}
-            />
-            {loading ? 'thinking' : 'online'}
-          </Badge>
-
-          {isCompact && (
-            <Button
-              onClick={() => setIsOpen(false)}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-lg text-[color:var(--text-tertiary)] hover:bg-muted"
-              title="Close chat"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <ScrollArea className="h-[420px] bg-[color:var(--bg-base)] p-5" style={{ background: 'var(--bg-base)' }}>
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className="flex animate-fadeIn gap-2.5"
-              style={{ justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start' }}
-            >
-              {message.sender === 'bot' && (
-                <Avatar className="mt-0.5 h-7 w-7 border border-[color:var(--accent-signal)] bg-[color:var(--accent-signal-dim)]">
-                  <AvatarFallback className="bg-transparent text-[color:var(--accent-signal)]">
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 20 20">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" />
-                    </svg>
-                  </AvatarFallback>
-                </Avatar>
-              )}
-
-              <div
-                className="max-w-[80%] whitespace-normal break-words px-4 py-2.5 text-[13.5px] leading-relaxed"
-                style={{
-                  background: message.sender === 'user' ? 'var(--accent-signal)' : 'var(--bg-panel)',
-                  border: message.sender === 'user' ? 'none' : '1px solid var(--border-hairline)',
-                  color: message.sender === 'user' ? '#0a0c10' : 'var(--text-primary)',
-                  fontWeight: message.sender === 'user' ? 600 : 400,
-                  borderRadius: message.sender === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                }}
-              >
-                {message.text}
-              </div>
-
-              {message.sender === 'user' && (
-                <Avatar className="mt-0.5 h-7 w-7 border border-[color:var(--border-hairline-strong)] bg-[color:var(--bg-panel-raised)]">
-                  <AvatarFallback className="bg-transparent text-[color:var(--text-secondary)]">
-                    <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          ))}
-
-          {loading && (
-            <div className="flex items-center gap-2.5">
-              <Avatar className="h-7 w-7 border border-[color:var(--accent-signal)] bg-[color:var(--accent-signal-dim)]">
-                <AvatarFallback className="bg-transparent text-[color:var(--accent-signal)]">
-                  <svg className="h-3.5 w-3.5 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 20 20">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-4 2V5z" />
-                  </svg>
-                </AvatarFallback>
-              </Avatar>
-
-              <div
-                className="flex items-center gap-1.5 px-4 py-2.5"
-                style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-hairline)', borderRadius: '16px 16px 16px 4px' }}
-              >
-                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-signal)', animationDelay: '0ms' }} />
-                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-signal)', animationDelay: '150ms' }} />
-                <div className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent-signal)', animationDelay: '300ms' }} />
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-
-      <form
-        onSubmit={handleSubmit}
-        className="border-t p-3"
-        style={{ borderColor: 'var(--border-hairline)', background: 'var(--bg-panel-raised)' }}
-      >
-        <div className="flex items-center gap-2 rounded-full border py-1.5 pl-4 pr-1.5 transition-colors" style={{ background: 'var(--bg-base)', borderColor: 'var(--border-hairline-strong)' }}>
-          <Input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question…"
-            disabled={loading}
-            className="h-9 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            style={{ color: 'var(--text-primary)' }}
-          />
-
-          <Button
-            type="submit"
-            disabled={loading || !input.trim()}
-            variant="default"
-            size="icon"
-            className="h-9 w-9 rounded-full transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105"
-            style={{ background: 'var(--accent-signal)', color: '#0a0c10' }}
+      {/* Chat panel */}
+      {open && (
+        <div
+          className="fixed bottom-6 right-6 z-40 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[calc(100vh-3rem)] rounded flex flex-col overflow-hidden shadow-2xl"
+          style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-hairline)' }}
+        >
+          {/* Header */}
+          <div
+            className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+            style={{ borderBottom: '1px solid var(--border-hairline)', background: 'var(--bg-panel-raised)' }}
           >
-            {loading ? (
-              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z" />
-              </svg>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-diagnostic)' }} />
+              <span className="font-display font-semibold text-[13px]">Vehicle Assistant</span>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="w-6 h-6 flex items-center justify-center rounded transition-colors"
+              style={{ color: 'var(--text-tertiary)' }}
+              aria-label="Close chat"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {messages.length === 0 && (
+              <div className="font-mono text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                Ask about a noise, warning light, or symptom — e.g. &quot;my
+                brakes squeal when I stop&quot; or &quot;what does this
+                diagnosis mean?&quot;
+              </div>
             )}
-          </Button>
+
+            {messages.map((m, idx) => (
+              <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className="max-w-[85%] px-3 py-2 rounded text-[13px] leading-relaxed whitespace-pre-wrap"
+                  style={
+                    m.role === 'user'
+                      ? { background: 'var(--accent-signal-dim)', color: 'var(--text-primary)', border: '1px solid var(--accent-signal)' }
+                      : { background: 'var(--bg-panel-raised)', color: 'var(--text-primary)', border: '1px solid var(--border-hairline)' }
+                  }
+                >
+                  {m.content}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="flex justify-start">
+                <div
+                  className="px-3 py-2 rounded flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider"
+                  style={{ background: 'var(--bg-panel-raised)', border: '1px solid var(--border-hairline)', color: 'var(--text-tertiary)' }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: 'var(--accent-signal)' }} />
+                  Thinking
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div
+                className="px-3 py-2 rounded font-mono text-[11px]"
+                style={{ background: 'var(--status-high-dim)', border: '1px solid var(--status-high)', color: 'var(--status-high)' }}
+              >
+                {error}
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="flex items-end gap-2 px-3 py-3 flex-shrink-0" style={{ borderTop: '1px solid var(--border-hairline)' }}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Describe the issue…"
+              rows={1}
+              className="flex-1 resize-none bg-transparent text-[13px] outline-none py-2 px-1"
+              style={{ color: 'var(--text-primary)', maxHeight: '100px' }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              className="flex-shrink-0 w-9 h-9 rounded flex items-center justify-center transition-all"
+              style={{
+                background: loading || !input.trim() ? 'var(--bg-panel-raised)' : 'var(--accent-signal)',
+                color: loading || !input.trim() ? 'var(--text-tertiary)' : '#0b0f14',
+                cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+              }}
+              aria-label="Send message"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div
+            className="px-4 py-1.5 flex-shrink-0 font-mono text-[9px] text-center"
+            style={{ color: 'var(--text-tertiary)', borderTop: '1px solid var(--border-hairline)' }}
+          >
+            General guidance only — not a substitute for a certified mechanic
+          </div>
         </div>
-      </form>
-    </Card>
+      )}
+    </>
   );
-}
+};

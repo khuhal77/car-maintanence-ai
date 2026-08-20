@@ -36,10 +36,11 @@ class SensorReadingOut(BaseModel):
 
 class AnomalyOut(BaseModel):
     sensor: str
-    value: float
+    value: Optional[float] = None
     unit: str
-    expected_range: List[float]
+    expected_range: Optional[List[float]] = None
     severity: str
+    method: str
 
 
 class DiagnosisOut(BaseModel):

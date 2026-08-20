@@ -1,0 +1,15 @@
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T22:09:40.691340","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T22:09:40.691422","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T22:09:40.691452","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T22:09:40.691480","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T22:09:40.691506","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T22:09:52.661724","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T22:09:52.661802","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T22:09:52.661883","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T22:09:52.661919","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T22:09:52.661944","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"coolant_temperature","value":92.0,"unit":"°C","timestamp":"2026-08-19T22:13:33.558497","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":2500.0,"unit":"RPM","timestamp":"2026-08-19T22:13:33.558553","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"fuel_level","value":85.0,"unit":"%","timestamp":"2026-08-19T22:13:33.558572","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_rpm","value":35.0,"unit":"%","timestamp":"2026-08-19T22:13:33.558589","vehicle_id":"12312","confidence":0.95}
+{"sensor_type":"engine_hours","value":5200.0,"unit":"hours","timestamp":"2026-08-19T22:13:33.558606","vehicle_id":"12312","confidence":0.95}

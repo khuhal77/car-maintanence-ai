@@ -9,6 +9,7 @@ matters and what "isolation" means concretely here.
 import sys
 from models.sensor_diagnosis import run_sensor_diagnosis
 
+
 def test_run_sensor_diagnosis_full_contract_shape():
     result = run_sensor_diagnosis("v1", "battery_degraded")
     assert result["vehicle_id"] == "v1"

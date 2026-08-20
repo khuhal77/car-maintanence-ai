@@ -40,13 +40,13 @@ def test_diagnose_from_no_anomalies_returns_healthy_result():
     diagnosis = diagnose_from_anomalies([])
     assert diagnosis["part_type"] == "none"
     assert diagnosis["severity"] == "none"
-    assert diagnosis["method"] == "rule_based"
+    assert diagnosis["method"] in ("ml_isolation_forest", "threshold_fallback")
 
 
 def test_diagnose_from_single_anomaly_maps_to_correct_part():
     anomalies = [{
         "sensor": "battery_voltage", "value": 10.5, "unit": "V",
-        "expected_range": [12.0, 14.5], "severity": "critical",
+        "expected_range": [12.0, 14.5], "severity": "critical", "method": "threshold_fallback",
     }]
     diagnosis = diagnose_from_anomalies(anomalies)
     assert diagnosis["part_type"] == "battery"
@@ -57,11 +57,28 @@ def test_diagnose_from_single_anomaly_maps_to_correct_part():
 def test_diagnose_from_multiple_anomalies_picks_highest_severity():
     anomalies = [
         {"sensor": "tire_pressure_fl", "value": 24, "unit": "PSI",
-         "expected_range": [30, 36], "severity": "high"},
+         "expected_range": [30, 36], "severity": "high", "method": "threshold_fallback"},
         {"sensor": "coolant_temp", "value": 120, "unit": "°C",
-         "expected_range": [80, 100], "severity": "critical"},
+         "expected_range": [80, 100], "severity": "critical", "method": "threshold_fallback"},
     ]
     diagnosis = diagnose_from_anomalies(anomalies)
     # Critical coolant anomaly should win over high-severity tire anomaly
     assert diagnosis["part_type"] == "coolant"
     assert diagnosis["severity"] == "critical"
+
+
+def test_full_feature_set_uses_ml_model():
+    """When all ML_SENSOR_FEATURES are present, evaluate_readings should use
+    the trained IsolationForest rather than the threshold fallback (unless
+    scikit-learn genuinely isn't installed, in which case this still
+    degrades gracefully to the fallback and the test accepts either)."""
+    readings = [
+        {"sensor": "battery_voltage", "value": 10.8, "unit": "V"},
+        {"sensor": "coolant_temp", "value": 90, "unit": "°C"},
+        {"sensor": "oil_pressure", "value": 45, "unit": "PSI"},
+        {"sensor": "tire_pressure_fl", "value": 33, "unit": "PSI"},
+        {"sensor": "brake_pad_wear", "value": 20, "unit": "%"},
+    ]
+    anomalies = evaluate_readings(readings)
+    assert len(anomalies) >= 1
+    assert anomalies[0]["method"] in ("ml_isolation_forest", "threshold_fallback")

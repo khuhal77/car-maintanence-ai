@@ -341,9 +341,14 @@ Stated up front so scope doesn't creep mid-build:
    independently, then merges only their *output dicts* — never their
    internals. This preserves the separation this plan establishes; fusion
    becomes an additive layer, not a rewrite.
-4. **Real ML model** — replace `sensor_rules.py`'s threshold logic with a
-   trained anomaly-detection model once real historical sensor data exists
-   to train on (which requires Phase 1 hardware + persistence first).
+4. **Real ML model** — ✅ **Implemented.** `sensor_rules.py` now uses a
+   trained `IsolationForest` (scikit-learn) as the primary anomaly-scoring
+   method, trained on synthetic normal-range data since no real historical
+   fleet data exists yet. The original threshold check remains as an
+   explicit, labeled fallback (`method: "threshold_fallback"` vs
+   `"ml_isolation_forest"` in every response) — same honesty pattern as the
+   photo pipeline's YOLO→heuristic cascade. Swapping in a model trained on
+   real historical sensor data later requires no route or contract change.
 
 ---
 
