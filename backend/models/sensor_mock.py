@@ -24,14 +24,13 @@ from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
-SENSOR_UNITS = {
-    "battery_voltage": "V",
-    "engine_rpm": "RPM",
-    "coolant_temp": "°C",
-    "oil_pressure": "PSI",
-    "tire_pressure_fl": "PSI",
-    "brake_pad_wear": "%",
-}
+from models.vehicle_domains import SENSOR_CATALOG
+
+# Units are sourced from the shared catalog (models/vehicle_domains.py) so
+# this file never drifts out of sync with the domain taxonomy. A couple of
+# scenario-only fields not in the formal 20-parameter catalog (e.g. the
+# OBD-standard vehicle_speed alias) fall back to the local dict below.
+SENSOR_UNITS = {**{k: v.unit for k, v in SENSOR_CATALOG.items()}, "wheel_speed": "km/h"}
 
 _PROFILES_PATH = Path(__file__).parent.parent / "data" / "sensor_profiles.json"
 

@@ -11,10 +11,11 @@ intentional.
 import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from models.sensor_diagnosis import run_sensor_diagnosis
 from models.sensor_mock import list_scenarios
+from models.vehicle_domains import domains_as_dict, catalog_as_dict, hierarchy_as_dict
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class DiagnosisOut(BaseModel):
     confidence: float
     recommended_parts: List[str]
     method: str
+    domain: str
 
 
 class SensorDiagnoseResponse(BaseModel):
@@ -98,4 +100,50 @@ async def get_scenarios():
         return list_scenarios()
     except Exception as e:
         logger.error(f"Error listing scenarios: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/domains", response_model=List[Dict[str, Any]])
+async def get_domains():
+    """
+    List the 11 vehicle health domains (10 conventional + EV-specific),
+    each with the sensor parameters that inform it. EV-specific also
+    includes its 7 sub-areas (HV battery, BMS, inverter, e-motor,
+    reduction gearbox, charging system, thermal management).
+    """
+    try:
+        return domains_as_dict()
+    except Exception as e:
+        logger.error(f"Error listing domains: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/catalog", response_model=List[Dict[str, Any]])
+async def get_catalog():
+    """
+    List the full sensor parameter catalog (14 existing/OBD-standard +
+    6 add-on + EV-specific parameters), each tagged with its domain(s),
+    typical acquisition method (OBD-II / CAN bus / physical sensor /
+    telematics), and whether it requires dedicated add-on hardware.
+    """
+    try:
+        return catalog_as_dict()
+    except Exception as e:
+        logger.error(f"Error listing sensor catalog: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/hierarchy", response_model=List[Dict[str, Any]])
+async def get_hierarchy():
+    """
+    Return the level 0-7 vehicle health data hierarchy (raw sensor ->
+    signal processing -> component parameter -> component health ->
+    subsystem health -> vehicle health -> prediction -> action). Reference
+    data describing what kind of artifact this pipeline's output
+    represents at each stage.
+    """
+    try:
+        return hierarchy_as_dict()
+    except Exception as e:
+        logger.error(f"Error listing data hierarchy: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

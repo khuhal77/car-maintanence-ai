@@ -12,6 +12,7 @@ interface Diagnosis {
   confidence?: number;
   detected_object?: string;
   method?: string;
+  domain?: string;
 }
 
 interface DiagnosisCardProps {
@@ -37,9 +38,9 @@ export const DiagnosisCard: React.FC<DiagnosisCardProps> = ({ diagnosis }) => {
           <span className="w-2 h-2 rounded-full" style={{ background: config.color }} />
           {config.label}
         </div>
-        {diagnosis.detected_object && (
+        {(diagnosis.domain || diagnosis.detected_object) && (
           <span className="font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-            source: {diagnosis.detected_object}
+            {diagnosis.domain ? `domain: ${diagnosis.domain.replace(/_/g, ' ')}` : `source: ${diagnosis.detected_object}`}
           </span>
         )}
       </div>

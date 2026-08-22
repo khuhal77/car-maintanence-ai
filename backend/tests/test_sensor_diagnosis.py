@@ -26,6 +26,18 @@ def test_run_sensor_diagnosis_healthy_scenario_has_no_anomalies():
     assert result["diagnosis"]["part_type"] == "none"
 
 
+def test_run_sensor_diagnosis_ev_scenario():
+    result = run_sensor_diagnosis("v1", "ev_battery_thermal_event")
+    assert result["diagnosis"]["part_type"] == "hv_battery"
+    assert result["diagnosis"]["domain"] == "ev_specific"
+
+
+def test_run_sensor_diagnosis_ev_healthy_scenario_has_no_anomalies():
+    result = run_sensor_diagnosis("v1", "ev_healthy")
+    assert result["anomalies"] == []
+    assert result["diagnosis"]["part_type"] == "none"
+
+
 def test_sensor_pipeline_does_not_import_photo_pipeline():
     """
     Concrete isolation check: importing the sensor diagnosis module (and

@@ -37,6 +37,7 @@ interface SensorDiagnoseResult {
     confidence: number;
     recommended_parts: string[];
     method: string;
+    domain: string;
   };
 }
 
@@ -193,26 +194,55 @@ export default function SensorDiagnosticsPage() {
                   Loading scenarios…
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
-                  {scenarios.map((s) => (
-                    <button
-                      key={s.scenario}
-                      onClick={() => setSelectedScenario(s.scenario)}
-                      className="text-left px-4 py-3 rounded transition-all"
-                      style={{
-                        background: selectedScenario === s.scenario ? 'var(--accent-signal-dim)' : 'var(--bg-panel-raised)',
-                        border: `1px solid ${selectedScenario === s.scenario ? 'var(--accent-signal)' : 'var(--border-hairline)'}`,
-                      }}
-                    >
-                      <div className="font-display font-medium text-[13px] mb-0.5">
-                        {formatScenarioLabel(s.scenario)}
-                      </div>
-                      <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                        {s.description}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="font-mono text-[10px] uppercase tracking-wider mb-2 mt-1" style={{ color: 'var(--accent-signal)' }}>
+                    Conventional vehicle
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
+                    {scenarios.filter((s) => !s.scenario.startsWith('ev_')).map((s) => (
+                      <button
+                        key={s.scenario}
+                        onClick={() => setSelectedScenario(s.scenario)}
+                        className="text-left px-4 py-3 rounded transition-all"
+                        style={{
+                          background: selectedScenario === s.scenario ? 'var(--accent-signal-dim)' : 'var(--bg-panel-raised)',
+                          border: `1px solid ${selectedScenario === s.scenario ? 'var(--accent-signal)' : 'var(--border-hairline)'}`,
+                        }}
+                      >
+                        <div className="font-display font-medium text-[13px] mb-0.5">
+                          {formatScenarioLabel(s.scenario)}
+                        </div>
+                        <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                          {s.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="font-mono text-[10px] uppercase tracking-wider mb-2" style={{ color: 'var(--accent-diagnostic)' }}>
+                    EV-specific
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
+                    {scenarios.filter((s) => s.scenario.startsWith('ev_')).map((s) => (
+                      <button
+                        key={s.scenario}
+                        onClick={() => setSelectedScenario(s.scenario)}
+                        className="text-left px-4 py-3 rounded transition-all"
+                        style={{
+                          background: selectedScenario === s.scenario ? 'var(--accent-diagnostic-dim)' : 'var(--bg-panel-raised)',
+                          border: `1px solid ${selectedScenario === s.scenario ? 'var(--accent-diagnostic)' : 'var(--border-hairline)'}`,
+                        }}
+                      >
+                        <div className="font-display font-medium text-[13px] mb-0.5">
+                          {formatScenarioLabel(s.scenario.replace(/^ev_/, ''))}
+                        </div>
+                        <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                          {s.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
 
               {error && (
@@ -244,8 +274,9 @@ export default function SensorDiagnosticsPage() {
               </div>
               <div className="space-y-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 <p>✓ Readings are generated from a mock profile — no OBD-II hardware involved in this prototype.</p>
-                <p>✓ An IsolationForest model, trained on synthetic normal-range data, scores each reading set for anomalies.</p>
-                <p>✓ If the model is unavailable, the backend falls back to explicit threshold checks — the response always discloses which method (<code>ml_isolation_forest</code> or <code>threshold_fallback</code>) produced the result.</p>
+                <p>✓ Covers all 11 vehicle health domains: engine, transmission, battery, electrical, tires &amp; wheels, brakes, steering, cooling, exhaust/emission, structure/body, and EV-specific (HV battery, BMS, inverter, e-motor, gearbox, charging, thermal management).</p>
+                <p>✓ Two IsolationForest models — one for conventional vehicles, one for EVs — score readings for anomalies; each is trained on synthetic normal-range data.</p>
+                <p>✓ If neither model matches the reading set, the backend falls back to explicit threshold checks — the response always discloses which method (<code>ml_isolation_forest</code> or <code>threshold_fallback</code>) produced the result.</p>
                 <p>✓ This pipeline shares no code with photo-based diagnosis — see the backend&apos;s isolation tests.</p>
               </div>
             </div>
@@ -289,6 +320,7 @@ export default function SensorDiagnosticsPage() {
                   parts: result.diagnosis.recommended_parts,
                   confidence: result.diagnosis.confidence,
                   method: result.diagnosis.method,
+                  domain: result.diagnosis.domain,
                 }}
               />
             </div>

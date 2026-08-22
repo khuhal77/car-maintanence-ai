@@ -1,68 +1,237 @@
 {
   "healthy": {
-    "description": "All sensors within normal operating range.",
+    "description": "All sensors within normal operating range (conventional vehicle).",
     "readings": {
-      "battery_voltage": 13.2,
       "engine_rpm": 800,
       "coolant_temp": 90,
-      "oil_pressure": 45,
+      "intake_temp": 28,
+      "map_sensor": 45,
+      "maf_sensor": 8,
+      "throttle_position": 12,
+      "fuel_pressure": 320,
+      "o2_lambda": 1.0,
+      "engine_load": 25,
+      "battery_voltage": 13.2,
+      "wheel_speed": 0,
+      "brake_status": 20,
       "tire_pressure_fl": 34,
-      "brake_pad_wear": 20
+      "ambient_temp": 24
     }
   },
   "battery_degraded": {
-    "description": "Single-sensor anomaly — battery voltage low.",
+    "description": "Single-sensor anomaly — 12V battery voltage low.",
     "readings": {
-      "battery_voltage": 11.2,
       "engine_rpm": 750,
       "coolant_temp": 91,
-      "oil_pressure": 44,
+      "intake_temp": 27,
+      "map_sensor": 44,
+      "maf_sensor": 7.8,
+      "throttle_position": 10,
+      "fuel_pressure": 318,
+      "o2_lambda": 1.02,
+      "engine_load": 24,
+      "battery_voltage": 11.2,
+      "wheel_speed": 0,
+      "brake_status": 22,
       "tire_pressure_fl": 33,
-      "brake_pad_wear": 22
+      "ambient_temp": 25
     }
   },
   "brake_wear_high": {
-    "description": "Safety-critical — brake pads significantly worn.",
+    "description": "Safety-critical — brake pads significantly worn, brake temp elevated.",
     "readings": {
-      "battery_voltage": 13.0,
       "engine_rpm": 780,
       "coolant_temp": 89,
-      "oil_pressure": 46,
+      "intake_temp": 29,
+      "map_sensor": 46,
+      "maf_sensor": 8.1,
+      "throttle_position": 14,
+      "fuel_pressure": 322,
+      "o2_lambda": 0.98,
+      "engine_load": 26,
+      "battery_voltage": 13.0,
+      "wheel_speed": 60,
+      "brake_status": 85,
+      "brake_temp": 290,
       "tire_pressure_fl": 34,
-      "brake_pad_wear": 85
+      "ambient_temp": 26
     }
   },
   "overheating": {
     "description": "Critical severity — engine coolant temperature too high.",
     "readings": {
-      "battery_voltage": 13.0,
       "engine_rpm": 2200,
       "coolant_temp": 118,
-      "oil_pressure": 40,
+      "intake_temp": 42,
+      "map_sensor": 85,
+      "maf_sensor": 18,
+      "throttle_position": 55,
+      "fuel_pressure": 340,
+      "o2_lambda": 1.05,
+      "engine_load": 78,
+      "battery_voltage": 13.0,
+      "wheel_speed": 90,
+      "brake_status": 25,
       "tire_pressure_fl": 34,
-      "brake_pad_wear": 25
+      "ambient_temp": 34
     }
   },
   "low_tire_pressure": {
     "description": "Low-severity, everyday scenario — one tire under-inflated.",
     "readings": {
-      "battery_voltage": 13.1,
       "engine_rpm": 800,
       "coolant_temp": 90,
-      "oil_pressure": 45,
+      "intake_temp": 26,
+      "map_sensor": 45,
+      "maf_sensor": 8,
+      "throttle_position": 11,
+      "fuel_pressure": 319,
+      "o2_lambda": 1.0,
+      "engine_load": 24,
+      "battery_voltage": 13.1,
+      "wheel_speed": 0,
+      "brake_status": 18,
       "tire_pressure_fl": 26,
-      "brake_pad_wear": 18
+      "ambient_temp": 23
+    }
+  },
+  "fuel_system_fault": {
+    "description": "Fuel pressure out of range with lean O2 reading — possible fuel pump issue.",
+    "readings": {
+      "engine_rpm": 900,
+      "coolant_temp": 92,
+      "intake_temp": 30,
+      "map_sensor": 48,
+      "maf_sensor": 6,
+      "throttle_position": 15,
+      "fuel_pressure": 190,
+      "o2_lambda": 1.28,
+      "engine_load": 30,
+      "battery_voltage": 13.0,
+      "wheel_speed": 0,
+      "brake_status": 20,
+      "tire_pressure_fl": 33,
+      "ambient_temp": 25
+    }
+  },
+  "engine_vibration_high": {
+    "description": "Add-on sensor scenario — elevated engine vibration, possible mount wear or misfire.",
+    "readings": {
+      "engine_rpm": 850,
+      "coolant_temp": 93,
+      "intake_temp": 29,
+      "map_sensor": 47,
+      "maf_sensor": 8.2,
+      "throttle_position": 13,
+      "fuel_pressure": 315,
+      "o2_lambda": 1.01,
+      "engine_load": 27,
+      "battery_voltage": 13.1,
+      "wheel_speed": 0,
+      "brake_status": 19,
+      "tire_pressure_fl": 34,
+      "ambient_temp": 24,
+      "engine_vibration": 8.2
+    }
+  },
+  "wheel_bearing_fault": {
+    "description": "Add-on sensor scenario — elevated wheel/hub vibration, possible bearing wear.",
+    "readings": {
+      "engine_rpm": 900,
+      "coolant_temp": 91,
+      "intake_temp": 28,
+      "map_sensor": 46,
+      "maf_sensor": 8,
+      "throttle_position": 20,
+      "fuel_pressure": 318,
+      "o2_lambda": 1.0,
+      "engine_load": 28,
+      "battery_voltage": 13.2,
+      "wheel_speed": 70,
+      "brake_status": 20,
+      "tire_pressure_fl": 34,
+      "ambient_temp": 25,
+      "wheel_hub_vibration": 6.5
     }
   },
   "multi_fault": {
     "description": "Multiple simultaneous anomalies — tests primary-issue selection.",
     "readings": {
-      "battery_voltage": 11.0,
       "engine_rpm": 850,
       "coolant_temp": 112,
-      "oil_pressure": 22,
+      "intake_temp": 38,
+      "map_sensor": 70,
+      "maf_sensor": 15,
+      "throttle_position": 40,
+      "fuel_pressure": 210,
+      "o2_lambda": 1.22,
+      "engine_load": 60,
+      "battery_voltage": 11.0,
+      "wheel_speed": 50,
+      "brake_status": 78,
+      "brake_temp": 310,
       "tire_pressure_fl": 27,
-      "brake_pad_wear": 78
+      "ambient_temp": 32
+    }
+  },
+  "ev_healthy": {
+    "description": "All sensors within normal operating range (EV).",
+    "readings": {
+      "hv_battery_soc": 72,
+      "hv_battery_temp": 28,
+      "bms_cell_voltage_delta": 8,
+      "inverter_temp": 45,
+      "e_motor_temp": 55,
+      "charging_current": 0,
+      "ambient_temp": 24
+    }
+  },
+  "ev_battery_thermal_event": {
+    "description": "Critical — HV battery temperature elevated, possible thermal runaway precursor.",
+    "readings": {
+      "hv_battery_soc": 65,
+      "hv_battery_temp": 58,
+      "bms_cell_voltage_delta": 12,
+      "inverter_temp": 48,
+      "e_motor_temp": 60,
+      "charging_current": 0,
+      "ambient_temp": 30
+    }
+  },
+  "ev_cell_imbalance": {
+    "description": "BMS domain — cell voltage delta outside safe range, indicates cell degradation.",
+    "readings": {
+      "hv_battery_soc": 55,
+      "hv_battery_temp": 30,
+      "bms_cell_voltage_delta": 45,
+      "inverter_temp": 44,
+      "e_motor_temp": 52,
+      "charging_current": 0,
+      "ambient_temp": 26
+    }
+  },
+  "ev_low_soc": {
+    "description": "Low severity — HV battery state of charge critically low, needs charging.",
+    "readings": {
+      "hv_battery_soc": 8,
+      "hv_battery_temp": 27,
+      "bms_cell_voltage_delta": 9,
+      "inverter_temp": 40,
+      "e_motor_temp": 48,
+      "charging_current": 0,
+      "ambient_temp": 22
+    }
+  },
+  "ev_inverter_overheat": {
+    "description": "Inverter domain — temperature outside safe operating range under load.",
+    "readings": {
+      "hv_battery_soc": 60,
+      "hv_battery_temp": 32,
+      "bms_cell_voltage_delta": 10,
+      "inverter_temp": 82,
+      "e_motor_temp": 70,
+      "charging_current": 0,
+      "ambient_temp": 33
     }
   }
 }

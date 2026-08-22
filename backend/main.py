@@ -76,6 +76,9 @@ async def api_info():
             {"method": "POST", "path": "/api/diagnose-fusion", "description": "Fused diagnosis combining photo + OBD-II sensor data"},
             {"method": "POST", "path": "/api/sensor-diagnose", "description": "Mock-sensor-only diagnosis (independent pipeline, no photo/hardware dependency)"},
             {"method": "GET", "path": "/api/sensor-diagnose/scenarios", "description": "List available mock sensor scenarios"},
+            {"method": "GET", "path": "/api/sensor-diagnose/domains", "description": "List the 11 vehicle health domains and their sensor parameters"},
+            {"method": "GET", "path": "/api/sensor-diagnose/catalog", "description": "List the full 20+ parameter sensor catalog with domain/method tags"},
+            {"method": "GET", "path": "/api/sensor-diagnose/hierarchy", "description": "List the level 0-7 vehicle health data hierarchy"},
         ]
     }
 
